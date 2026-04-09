@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Welcome from './components/Welcome';
 import SpellingTest from './components/SpellingTest';
 import GrammarTest from './components/GrammarTest';
@@ -17,7 +17,6 @@ import {
   formatNZDate
 } from './utils/scoring';
 
-// **IMPORTANT**: Replace this with your deployed Google Apps Script URL
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWcxmFZ2S4upR2oUbRpolwg4jL2zvDQX-5kSR6AM3J6b1HASL07QS5-1jMHvbI1yHYIg/exec';
 
 function AssessmentApp() {
@@ -66,7 +65,6 @@ function AssessmentApp() {
   };
 
   const handleReadingComplete = (passageResults) => {
-    // Calculate average WPM and accuracy across both passages
     let totalCorrect = 0;
     let totalQuestions = 0;
     let totalWPM = 0;
@@ -112,7 +110,6 @@ function AssessmentApp() {
       typing: typingScore
     }));
 
-    // Submit all results to Google Sheets
     submitResults(typingScore);
   };
 
@@ -139,7 +136,7 @@ function AssessmentApp() {
     };
 
     try {
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
+      await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
@@ -151,7 +148,6 @@ function AssessmentApp() {
       console.log('Results submitted successfully');
     } catch (error) {
       console.error('Error submitting results:', error);
-      // Still show thank you page even if submission fails
     }
 
     setStage('thankyou');
@@ -171,7 +167,7 @@ function AssessmentApp() {
 
 function App() {
   return (
-    <Router basename="/ta-rw-assessment">
+    <Router>
       <Routes>
         <Route path="/" element={<AssessmentApp />} />
         <Route path="/admin" element={<AdminDashboard />} />
