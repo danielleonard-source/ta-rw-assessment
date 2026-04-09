@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import Welcome from './components/Welcome';
 import SpellingTest from './components/SpellingTest';
 import GrammarTest from './components/GrammarTest';
@@ -166,15 +165,26 @@ function AssessmentApp() {
 }
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<AssessmentApp />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
-  );
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  useEffect(() => {
+    // Check if URL contains "admin" in any form
+    const url = window.location.href.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    const pathname = window.location.pathname.toLowerCase();
+    
+    if (url.includes('admin') || hash.includes('admin') || pathname.includes('admin')) {
+      setShowAdmin(true);
+    }
+  }, []);
+
+  // Show admin dashboard if URL contains "admin"
+  if (showAdmin) {
+    return <AdminDashboard />;
+  }
+
+  // Otherwise show assessment
+  return <AssessmentApp />;
 }
 
 export default App;
