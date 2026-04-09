@@ -77,10 +77,9 @@ export default function ThankYou({ candidateName }) {
             textAlign: 'left',
             paddingLeft: '20px'
           }}>
-            <li>Your results will be reviewed by the Dean and hiring team</li>
+            <li>Your results will be reviewed by the Head of Learning Support and hiring team</li>
             <li>We'll be in touch within 3-5 working days</li>
-            <li>If successful, you'll be invited for an interview</li>
-            <li>Check your email regularly for updates</li>
+            <li>If successful, you'll be required to submit documentation for police vetting</li>
           </ul>
         </div>
 

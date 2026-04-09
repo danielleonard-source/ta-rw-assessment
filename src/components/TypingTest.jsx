@@ -6,49 +6,12 @@ export default function TypingTest({ onComplete }) {
   const [isStarted, setIsStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes
   const [startTime, setStartTime] = useState(null);
-  const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState(null);
-  const [hasSubmitted, setHasSubmitted] = useState(false); // Prevent double submission
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  // Initialize speech recognition
-  useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = true;
-      recognitionInstance.interimResults = true;
-      recognitionInstance.lang = 'en-NZ'; // New Zealand English
-
-      recognitionInstance.onresult = (event) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        if (finalTranscript) {
-          setTypedText(prev => prev + finalTranscript);
-        }
-      };
-
-      recognitionInstance.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-      };
-
-      recognitionInstance.onend = () => {
-        setIsListening(false);
-      };
-
-      setRecognition(recognitionInstance);
-    }
-  }, []);
+  // Split the passage into sentences
+  const sentences = typingText.match(/[^.!?]+[.!?]+/g) || [typingText];
 
   useEffect(() => {
     if (isStarted && timeRemaining > 0) {
@@ -58,9 +21,6 @@ export default function TypingTest({ onComplete }) {
 
       return () => clearInterval(timer);
     } else if (isStarted && timeRemaining === 0 && !hasSubmitted) {
-      if (isListening && recognition) {
-        recognition.stop();
-      }
       handleSubmit();
     }
   }, [isStarted, timeRemaining, hasSubmitted]);
@@ -68,34 +28,52 @@ export default function TypingTest({ onComplete }) {
   const handleStart = () => {
     setIsStarted(true);
     setStartTime(Date.now());
+    // Auto-play first sentence
+    setTimeout(() => speakSentence(0), 500);
   };
 
-  const toggleDictation = () => {
-    if (!recognition) {
-      alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
-      return;
+  const speakSentence = (index) => {
+    if ('speechSynthesis' in window && index < sentences.length) {
+      setIsPlaying(true);
+      const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
+      utterance.rate = 0.9; // Slightly slower for typing
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      utterance.lang = 'en-NZ';
+      
+      utterance.onend = () => {
+        setIsPlaying(false);
+      };
+      
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
     }
+  };
 
-    if (isListening) {
-      recognition.stop();
-      setIsListening(false);
-    } else {
-      recognition.start();
-      setIsListening(true);
+  const handleReplay = () => {
+    speakSentence(currentSentenceIndex);
+  };
+
+  const handleNextSentence = () => {
+    if (currentSentenceIndex < sentences.length - 1) {
+      setCurrentSentenceIndex(currentSentenceIndex + 1);
+      speakSentence(currentSentenceIndex + 1);
+    }
+  };
+
+  const handlePreviousSentence = () => {
+    if (currentSentenceIndex > 0) {
+      setCurrentSentenceIndex(currentSentenceIndex - 1);
+      speakSentence(currentSentenceIndex - 1);
     }
   };
 
   const handleSubmit = () => {
-    // Prevent double submission
     if (hasSubmitted) {
       return;
     }
     
     setHasSubmitted(true);
-
-    if (isListening && recognition) {
-      recognition.stop();
-    }
 
     const endTime = Date.now();
     const actualTimeInSeconds = (endTime - startTime) / 1000;
@@ -135,7 +113,7 @@ export default function TypingTest({ onComplete }) {
             color: '#002060',
             marginBottom: '20px'
           }}>
-            Dictation Test (Reader-Writer Assessment)
+            Typing & Dictation Assessment
           </h2>
 
           <div style={{
@@ -157,12 +135,12 @@ export default function TypingTest({ onComplete }) {
               lineHeight: '1.8',
               paddingLeft: '20px'
             }}>
-              <li>You will have <strong>3 minutes</strong> for this dictation test</li>
-              <li><strong>Read the passage</strong> on screen</li>
-              <li><strong>Dictate it aloud</strong> using the microphone button</li>
-              <li>You can also <strong>type manually</strong> if preferred</li>
-              <li>This tests your <strong>ability to dictate clearly</strong> as a Reader-Writer</li>
-              <li>The system will transcribe your speech automatically</li>
+              <li>You will have <strong>3 minutes</strong> to complete this test</li>
+              <li><strong>Listen to each sentence</strong> read aloud by the computer</li>
+              <li><strong>Type exactly what you hear</strong> - including punctuation</li>
+              <li>You can <strong>replay</strong> each sentence as many times as needed</li>
+              <li>Click <strong>"Next Sentence"</strong> to move forward</li>
+              <li>This tests your <strong>typing speed, spelling, and grammar</strong></li>
             </ul>
           </div>
 
@@ -179,9 +157,8 @@ export default function TypingTest({ onComplete }) {
               fontSize: '16px',
               lineHeight: '1.6'
             }}>
-              <strong>⚠️ Important:</strong> This test simulates a <strong>Reader-Writer scenario</strong> 
-              where you dictate student responses. Speak clearly and accurately, including punctuation 
-              (say "comma", "period", etc.).
+              <strong>⚠️ Important:</strong> Type <strong>exactly what you hear</strong>, including 
+              all punctuation marks. This simulates taking dictation from a student during an assessment.
             </p>
           </div>
 
@@ -201,14 +178,14 @@ export default function TypingTest({ onComplete }) {
             onMouseOver={(e) => e.target.style.background = '#002060'}
             onMouseOut={(e) => e.target.style.background = '#1d5693'}
           >
-            Begin Dictation Test
+            Begin Typing Test
           </button>
         </div>
       </div>
     );
   }
 
-  // Calculate current WPM based on elapsed time (not just typed words)
+  // Calculate current WPM
   const elapsedSeconds = 180 - timeRemaining;
   const currentWords = typedText.trim().split(/\s+/).filter(w => w.length > 0).length;
   const currentWPM = elapsedSeconds > 0 ? Math.round((currentWords / elapsedSeconds) * 60) : 0;
@@ -278,80 +255,102 @@ export default function TypingTest({ onComplete }) {
           </div>
         </div>
 
-        {/* Reference Text */}
+        {/* Audio Playback Controls */}
         <div style={{
-          background: '#f9f9f9',
-          border: '2px solid #e0e0e0',
-          borderRadius: '8px',
-          padding: '20px',
-          marginBottom: '25px'
+          background: '#f0f7ff',
+          border: '2px solid #009bd8',
+          borderRadius: '12px',
+          padding: '30px',
+          marginBottom: '30px',
+          textAlign: 'center'
         }}>
-          <h3 style={{
-            fontSize: '16px',
-            color: '#002060',
-            marginBottom: '15px',
-            fontWeight: 'bold'
-          }}>
-            DICTATE THIS TEXT:
-          </h3>
           <p style={{
             fontSize: '16px',
-            lineHeight: '1.8',
-            color: '#333',
-            fontFamily: 'Georgia, serif',
-            margin: 0
+            color: '#002060',
+            marginBottom: '20px',
+            fontWeight: 'bold'
           }}>
-            {typingText}
+            Sentence {currentSentenceIndex + 1} of {sentences.length}
+          </p>
+
+          <div style={{
+            display: 'flex',
+            gap: '15px',
+            justifyContent: 'center',
+            marginBottom: '20px'
+          }}>
+            <button
+              onClick={handlePreviousSentence}
+              disabled={currentSentenceIndex === 0 || hasSubmitted}
+              style={{
+                padding: '12px 24px',
+                fontSize: '16px',
+                color: currentSentenceIndex === 0 ? '#ccc' : '#1d5693',
+                background: 'white',
+                border: `2px solid ${currentSentenceIndex === 0 ? '#ccc' : '#1d5693'}`,
+                borderRadius: '8px',
+                cursor: currentSentenceIndex === 0 ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              ← Previous
+            </button>
+
+            <button
+              onClick={handleReplay}
+              disabled={isPlaying || hasSubmitted}
+              style={{
+                background: isPlaying ? '#ccc' : '#1d5693',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                width: '80px',
+                height: '80px',
+                fontSize: '36px',
+                cursor: isPlaying ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(29, 86, 147, 0.3)'
+              }}
+              onMouseOver={(e) => !isPlaying && (e.target.style.background = '#002060')}
+              onMouseOut={(e) => !isPlaying && (e.target.style.background = '#1d5693')}
+            >
+              {isPlaying ? '⏸' : '▶'}
+            </button>
+
+            <button
+              onClick={handleNextSentence}
+              disabled={currentSentenceIndex >= sentences.length - 1 || hasSubmitted}
+              style={{
+                padding: '12px 24px',
+                fontSize: '16px',
+                color: currentSentenceIndex >= sentences.length - 1 ? '#ccc' : '#1d5693',
+                background: 'white',
+                border: `2px solid ${currentSentenceIndex >= sentences.length - 1 ? '#ccc' : '#1d5693'}`,
+                borderRadius: '8px',
+                cursor: currentSentenceIndex >= sentences.length - 1 ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              Next →
+            </button>
+          </div>
+
+          <p style={{
+            color: '#002060',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            marginBottom: '8px'
+          }}>
+            {isPlaying ? 'Playing...' : 'Click ▶ to hear the sentence'}
+          </p>
+          <p style={{ color: '#666', fontSize: '14px' }}>
+            Listen carefully and type what you hear
           </p>
         </div>
 
-        {/* Dictation Controls */}
-        <div style={{
-          display: 'flex',
-          gap: '15px',
-          marginBottom: '25px',
-          alignItems: 'center'
-        }}>
-          <button
-            onClick={toggleDictation}
-            disabled={hasSubmitted}
-            style={{
-              padding: '16px 32px',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: 'white',
-              background: hasSubmitted ? '#ccc' : (isListening ? '#f44336' : '#4caf50'),
-              border: 'none',
-              borderRadius: '8px',
-              cursor: hasSubmitted ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}
-            onMouseOver={(e) => !hasSubmitted && (e.target.style.opacity = '0.9')}
-            onMouseOut={(e) => !hasSubmitted && (e.target.style.opacity = '1')}
-          >
-            <span style={{ fontSize: '24px' }}>{isListening ? '⏸' : '🎤'}</span>
-            {isListening ? 'Stop Dictating' : 'Start Dictating'}
-          </button>
-
-          {isListening && (
-            <div style={{
-              padding: '8px 16px',
-              background: '#ffebee',
-              border: '2px solid #f44336',
-              borderRadius: '6px',
-              color: '#c62828',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              animation: 'pulse 1.5s infinite'
-            }}>
-              🔴 LISTENING...
-            </div>
-          )}
-        </div>
-
-        {/* Transcription Area */}
+        {/* Typing Area */}
         <div style={{ marginBottom: '25px' }}>
           <label style={{
             display: 'block',
@@ -360,17 +359,19 @@ export default function TypingTest({ onComplete }) {
             fontSize: '16px',
             fontWeight: 'bold'
           }}>
-            YOUR DICTATION (You can also type manually):
+            TYPE WHAT YOU HEAR:
           </label>
           <textarea
             value={typedText}
             onChange={(e) => setTypedText(e.target.value)}
-            placeholder="Click 'Start Dictating' to speak, or type here manually..."
-            rows={8}
+            placeholder="Listen to the audio and type what you hear..."
+            rows={10}
             spellCheck="false"
             autoComplete="off"
             autoCorrect="off"
+            autoCapitalize="off"
             disabled={hasSubmitted}
+            autoFocus
             style={{
               width: '100%',
               padding: '16px',
@@ -436,7 +437,7 @@ export default function TypingTest({ onComplete }) {
           onMouseOver={(e) => !hasSubmitted && (e.target.style.background = '#002060')}
           onMouseOut={(e) => !hasSubmitted && (e.target.style.background = '#1d5693')}
         >
-          {hasSubmitted ? 'Submitting...' : 'Submit Dictation Test'}
+          {hasSubmitted ? 'Submitting...' : 'Submit Typing Test'}
         </button>
 
         <p style={{
@@ -450,13 +451,6 @@ export default function TypingTest({ onComplete }) {
             : 'Time is up! Click submit to complete the test'}
         </p>
       </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </div>
   );
 }
