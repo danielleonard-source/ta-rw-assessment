@@ -116,20 +116,21 @@ function AssessmentApp() {
     // All scores are already in percentage format (0-100)
     const finalScores = {
       spellingScore: results.spelling.totalScore,           // Test spelling
-      grammarScore: results.grammar.totalScore,             // Test grammar
+      grammarScore: results.grammar.totalScore,             // Test grammar (only source)
       readingWPM: results.reading.averageWPM,
       readingAccuracy: results.reading.accuracy,
       typingWPM: typingScore.adjustedWPM,
       typingAccuracy: typingScore.accuracy,
-      typingSpellingScore: typingScore.spellingAccuracy,    // NEW: Typing spelling
-      typingGrammarScore: typingScore.grammarAccuracy       // NEW: Typing grammar
+      typingSpellingScore: typingScore.spellingAccuracy    // Typing spelling only
     };
 
     const overallGrade = calculateOverallGrade(finalScores);
 
-    // Calculate averages for display
+    // Calculate average spelling (test + typing)
     const avgSpelling = Math.round((finalScores.spellingScore + finalScores.typingSpellingScore) / 2);
-    const avgGrammar = Math.round((finalScores.grammarScore + finalScores.typingGrammarScore) / 2);
+    
+    // Grammar is ONLY from grammar test (no typing grammar)
+    const grammarScore = finalScores.grammarScore;
 
     const submissionData = {
       timestamp: formatNZDate(new Date()),
@@ -137,7 +138,7 @@ function AssessmentApp() {
       candidateEmail: candidateInfo.candidateEmail,
       assessmentCode: candidateInfo.assessmentCode,
       spellingScore: avgSpelling,              // AVERAGE of test + typing
-      grammarScore: avgGrammar,                // AVERAGE of test + typing
+      grammarScore: grammarScore,              // ONLY from grammar test
       readingWPM: finalScores.readingWPM,
       readingAccuracy: finalScores.readingAccuracy,
       typingWPM: finalScores.typingWPM,
