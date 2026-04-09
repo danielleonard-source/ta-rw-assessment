@@ -3,12 +3,15 @@ import React, { useState } from 'react';
 export default function Welcome({ onStart }) {
   const [candidateName, setCandidateName] = useState('');
   const [candidateEmail, setCandidateEmail] = useState('');
-  const [assessmentCode, setAssessmentCode] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (candidateName.trim() && candidateEmail.trim() && assessmentCode.trim()) {
-      onStart({ candidateName, candidateEmail, assessmentCode });
+    if (candidateName.trim() && candidateEmail.trim()) {
+      onStart({ 
+        candidateName, 
+        candidateEmail, 
+        assessmentCode: `AUTO-${Date.now()}` // Auto-generated code
+      });
     }
   };
 
@@ -99,7 +102,7 @@ export default function Welcome({ onStart }) {
             />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '30px' }}>
             <label style={{
               display: 'block',
               marginBottom: '8px',
@@ -125,39 +128,6 @@ export default function Welcome({ onStart }) {
               onFocus={(e) => e.target.style.borderColor = '#009bd8'}
               onBlur={(e) => e.target.style.borderColor = '#ddd'}
             />
-          </div>
-
-          <div style={{ marginBottom: '30px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              color: '#002060',
-              fontWeight: '600'
-            }}>
-              Assessment Code *
-            </label>
-            <input
-              type="text"
-              value={assessmentCode}
-              onChange={(e) => setAssessmentCode(e.target.value.toUpperCase())}
-              required
-              placeholder="Enter code provided by hiring team"
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '16px',
-                border: '2px solid #ddd',
-                borderRadius: '6px',
-                outline: 'none',
-                fontFamily: 'monospace',
-                letterSpacing: '1px'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#009bd8'}
-              onBlur={(e) => e.target.style.borderColor = '#ddd'}
-            />
-            <p style={{ fontSize: '13px', color: '#666', marginTop: '6px' }}>
-              This code was provided in your assessment invitation email
-            </p>
           </div>
 
           <button
