@@ -58,22 +58,45 @@ export function scoreGrammar(userAnswer, correctAnswer) {
 
 // Calculate typing WPM with accuracy penalty
 export function calculateTypingScore(typedText, referenceText, timeInSeconds) {
-  const words = typedText.trim().split(/\s+/).length;
-  const rawWPM = (words / timeInSeconds) * 60;
+  // Calculate words typed
+  const words = typedText.trim().split(/\s+/).filter(w => w.length > 0).length;
+  
+  // Calculate WPM based on elapsed time
+  const rawWPM = timeInSeconds > 0 ? (words / timeInSeconds) * 60 : 0;
 
-  // Calculate accuracy
+  // Calculate accuracy using Levenshtein distance
   const distance = levenshteinDistance(typedText.trim(), referenceText.trim());
-  const accuracy = Math.max(0, 1 - (distance / referenceText.length));
+  const maxLength = Math.max(typedText.length, referenceText.length);
+  const accuracy = Math.max(0, 1 - (distance / maxLength));
 
   // Accuracy penalty: subtract 1 WPM per 1% error
   const accuracyPenalty = (1 - accuracy) * 100;
   const adjustedWPM = Math.max(0, rawWPM - accuracyPenalty);
 
+  // Calculate spelling accuracy (word-by-word)
+  const typedWords = typedText.trim().toLowerCase().split(/\s+/);
+  const referenceWords = referenceText.trim().toLowerCase().split(/\s+/);
+  let correctWords = 0;
+  
+  const minLength = Math.min(typedWords.length, referenceWords.length);
+  for (let i = 0; i < minLength; i++) {
+    if (typedWords[i] === referenceWords[i]) {
+      correctWords++;
+    }
+  }
+  
+  const spellingAccuracy = minLength > 0 ? (correctWords / referenceWords.length) * 100 : 0;
+
+  // Calculate grammar/punctuation accuracy
+  const grammarAccuracy = accuracy * 100;
+
   return {
     rawWPM: Math.round(rawWPM),
     accuracy: Math.round(accuracy * 100),
     adjustedWPM: Math.round(adjustedWPM),
-    errors: distance
+    errors: distance,
+    spellingAccuracy: Math.round(spellingAccuracy),
+    grammarAccuracy: Math.round(grammarAccuracy)
   };
 }
 
@@ -82,7 +105,7 @@ export function calculateReadingWPM(wordCount, timeInSeconds) {
   return Math.round((wordCount / timeInSeconds) * 60);
 }
 
-// Overall assessment grading
+// Overall assessment grading with typing spelling/grammar included
 export function calculateOverallGrade(scores) {
   const {
     spellingScore,
@@ -90,17 +113,23 @@ export function calculateOverallGrade(scores) {
     readingWPM,
     readingAccuracy,
     typingWPM,
-    typingAccuracy
+    typingAccuracy,
+    typingSpellingScore,
+    typingGrammarScore
   } = scores;
 
-  // Weighted scoring (priority order: spelling/grammar > reading > typing)
+  // Calculate AVERAGE spelling and grammar (test + typing)
+  const avgSpellingScore = (spellingScore + typingSpellingScore) / 2;
+  const avgGrammarScore = (grammarScore + typingGrammarScore) / 2;
+
+  // Weighted scoring (priority order: spelling/grammar > reading > typing speed)
   const spellingGrammarWeight = 0.40;
   const readingWeight = 0.35;
   const typingWeight = 0.25;
 
   // Normalize all scores to 0-100
-  const spellingNormalized = spellingScore; // Already percentage
-  const grammarNormalized = grammarScore; // Already percentage
+  const spellingNormalized = avgSpellingScore; // Already percentage
+  const grammarNormalized = avgGrammarScore; // Already percentage
   const readingWPMNormalized = Math.min(100, (readingWPM / 250) * 100); // 250 WPM = 100%
   const typingWPMNormalized = Math.min(100, (typingWPM / 60) * 100); // 60 WPM = 100%
 
@@ -114,11 +143,11 @@ export function calculateOverallGrade(scores) {
     (readingCombined * readingWeight) +
     (typingCombined * typingWeight);
 
-  // Determine recommendation
+  // Determine recommendation (using AVERAGE spelling/grammar)
   let recommendation = '';
-  if (weightedScore >= 75 && spellingScore >= 70 && grammarScore >= 70 && typingWPM >= 35) {
+  if (weightedScore >= 75 && avgSpellingScore >= 70 && avgGrammarScore >= 70 && typingWPM >= 35) {
     recommendation = 'SUITABLE - Strong candidate for TA/RW role';
-  } else if (weightedScore >= 60 && spellingScore >= 60 && grammarScore >= 60) {
+  } else if (weightedScore >= 60 && avgSpellingScore >= 60 && avgGrammarScore >= 60) {
     recommendation = 'REVIEW - May be suitable with support or specific placement';
   } else {
     recommendation = 'NOT RECOMMENDED - Does not meet minimum competency standards';

@@ -9,6 +9,7 @@ export default function TypingTest({ onComplete }) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [speechRate, setSpeechRate] = useState(0.9); // Default: 0.9 (slightly slower)
 
   // Split the passage into sentences
   const sentences = typingText.match(/[^.!?]+[.!?]+/g) || [typingText];
@@ -36,7 +37,7 @@ export default function TypingTest({ onComplete }) {
     if ('speechSynthesis' in window && index < sentences.length) {
       setIsPlaying(true);
       const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
-      utterance.rate = 0.9; // Slightly slower for typing
+      utterance.rate = speechRate;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       utterance.lang = 'en-NZ';
@@ -66,6 +67,10 @@ export default function TypingTest({ onComplete }) {
       setCurrentSentenceIndex(currentSentenceIndex - 1);
       speakSentence(currentSentenceIndex - 1);
     }
+  };
+
+  const handleSpeedChange = (newRate) => {
+    setSpeechRate(newRate);
   };
 
   const handleSubmit = () => {
@@ -139,6 +144,7 @@ export default function TypingTest({ onComplete }) {
               <li><strong>Listen to each sentence</strong> read aloud by the computer</li>
               <li><strong>Type exactly what you hear</strong> - including punctuation</li>
               <li>You can <strong>replay</strong> each sentence as many times as needed</li>
+              <li>Adjust the <strong>speech speed</strong> using the speed control buttons</li>
               <li>Click <strong>"Next Sentence"</strong> to move forward</li>
               <li>This tests your <strong>typing speed, spelling, and grammar</strong></li>
             </ul>
@@ -252,6 +258,93 @@ export default function TypingTest({ onComplete }) {
               {currentWords}
             </div>
             <div style={{ fontSize: '14px', color: '#666' }}>Words</div>
+          </div>
+        </div>
+
+        {/* Speed Control */}
+        <div style={{
+          background: '#f9f9f9',
+          border: '2px solid #e0e0e0',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: '20px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '15px'
+          }}>
+            <label style={{
+              fontSize: '16px',
+              color: '#002060',
+              fontWeight: 'bold'
+            }}>
+              Speech Speed:
+            </label>
+            <span style={{
+              fontSize: '18px',
+              color: '#1d5693',
+              fontWeight: 'bold'
+            }}>
+              {speechRate === 0.7 ? 'Slow' : speechRate === 0.9 ? 'Normal' : 'Fast'}
+            </span>
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '10px'
+          }}>
+            <button
+              onClick={() => handleSpeedChange(0.7)}
+              disabled={hasSubmitted}
+              style={{
+                flex: 1,
+                padding: '12px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white',
+                background: speechRate === 0.7 ? '#1d5693' : '#999',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: hasSubmitted ? 'not-allowed' : 'pointer'
+              }}
+            >
+              🐌 Slow (0.7x)
+            </button>
+            <button
+              onClick={() => handleSpeedChange(0.9)}
+              disabled={hasSubmitted}
+              style={{
+                flex: 1,
+                padding: '12px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white',
+                background: speechRate === 0.9 ? '#1d5693' : '#999',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: hasSubmitted ? 'not-allowed' : 'pointer'
+              }}
+            >
+              🚶 Normal (0.9x)
+            </button>
+            <button
+              onClick={() => handleSpeedChange(1.1)}
+              disabled={hasSubmitted}
+              style={{
+                flex: 1,
+                padding: '12px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white',
+                background: speechRate === 1.1 ? '#1d5693' : '#999',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: hasSubmitted ? 'not-allowed' : 'pointer'
+              }}
+            >
+              🏃 Fast (1.1x)
+            </button>
           </div>
         </div>
 

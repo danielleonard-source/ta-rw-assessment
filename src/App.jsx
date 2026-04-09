@@ -115,23 +115,34 @@ function AssessmentApp() {
   const submitResults = async (typingScore) => {
     // All scores are already in percentage format (0-100)
     const finalScores = {
-      spellingScore: results.spelling.totalScore,      // Already 0-100
-      grammarScore: results.grammar.totalScore,        // Already 0-100
-      readingWPM: results.reading.averageWPM,          // Raw number
-      readingAccuracy: results.reading.accuracy,       // Already 0-100
-      typingWPM: typingScore.adjustedWPM,              // Raw number
-      typingAccuracy: typingScore.accuracy             // Already 0-100
+      spellingScore: results.spelling.totalScore,           // Test spelling
+      grammarScore: results.grammar.totalScore,             // Test grammar
+      readingWPM: results.reading.averageWPM,
+      readingAccuracy: results.reading.accuracy,
+      typingWPM: typingScore.adjustedWPM,
+      typingAccuracy: typingScore.accuracy,
+      typingSpellingScore: typingScore.spellingAccuracy,    // NEW: Typing spelling
+      typingGrammarScore: typingScore.grammarAccuracy       // NEW: Typing grammar
     };
 
     const overallGrade = calculateOverallGrade(finalScores);
+
+    // Calculate averages for display
+    const avgSpelling = Math.round((finalScores.spellingScore + finalScores.typingSpellingScore) / 2);
+    const avgGrammar = Math.round((finalScores.grammarScore + finalScores.typingGrammarScore) / 2);
 
     const submissionData = {
       timestamp: formatNZDate(new Date()),
       candidateName: candidateInfo.candidateName,
       candidateEmail: candidateInfo.candidateEmail,
       assessmentCode: candidateInfo.assessmentCode,
-      ...finalScores,
-      overallScore: overallGrade.overallScore,         // Already 0-100
+      spellingScore: avgSpelling,              // AVERAGE of test + typing
+      grammarScore: avgGrammar,                // AVERAGE of test + typing
+      readingWPM: finalScores.readingWPM,
+      readingAccuracy: finalScores.readingAccuracy,
+      typingWPM: finalScores.typingWPM,
+      typingAccuracy: finalScores.typingAccuracy,
+      overallScore: overallGrade.overallScore,
       recommendation: overallGrade.recommendation
     };
 
