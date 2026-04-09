@@ -8,6 +8,7 @@ export default function TypingTest({ onComplete }) {
   const [startTime, setStartTime] = useState(null);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false); // Prevent double submission
 
   // Initialize speech recognition
   useEffect(() => {
@@ -56,13 +57,13 @@ export default function TypingTest({ onComplete }) {
       }, 1000);
 
       return () => clearInterval(timer);
-    } else if (isStarted && timeRemaining === 0) {
+    } else if (isStarted && timeRemaining === 0 && !hasSubmitted) {
       if (isListening && recognition) {
         recognition.stop();
       }
       handleSubmit();
     }
-  }, [isStarted, timeRemaining]);
+  }, [isStarted, timeRemaining, hasSubmitted]);
 
   const handleStart = () => {
     setIsStarted(true);
@@ -85,6 +86,13 @@ export default function TypingTest({ onComplete }) {
   };
 
   const handleSubmit = () => {
+    // Prevent double submission
+    if (hasSubmitted) {
+      return;
+    }
+    
+    setHasSubmitted(true);
+
     if (isListening && recognition) {
       recognition.stop();
     }
@@ -200,9 +208,9 @@ export default function TypingTest({ onComplete }) {
     );
   }
 
-  // Calculate current WPM
-  const currentWords = typedText.trim().split(/\s+/).filter(w => w.length > 0).length;
+  // Calculate current WPM based on elapsed time (not just typed words)
   const elapsedSeconds = 180 - timeRemaining;
+  const currentWords = typedText.trim().split(/\s+/).filter(w => w.length > 0).length;
   const currentWPM = elapsedSeconds > 0 ? Math.round((currentWords / elapsedSeconds) * 60) : 0;
 
   // Calculate progress
@@ -264,9 +272,9 @@ export default function TypingTest({ onComplete }) {
               fontWeight: 'bold',
               color: '#009bd8'
             }}>
-              {progress}%
+              {currentWords}
             </div>
-            <div style={{ fontSize: '14px', color: '#666' }}>Progress</div>
+            <div style={{ fontSize: '14px', color: '#666' }}>Words</div>
           </div>
         </div>
 
@@ -306,21 +314,22 @@ export default function TypingTest({ onComplete }) {
         }}>
           <button
             onClick={toggleDictation}
+            disabled={hasSubmitted}
             style={{
               padding: '16px 32px',
               fontSize: '18px',
               fontWeight: 'bold',
               color: 'white',
-              background: isListening ? '#f44336' : '#4caf50',
+              background: hasSubmitted ? '#ccc' : (isListening ? '#f44336' : '#4caf50'),
               border: 'none',
               borderRadius: '8px',
-              cursor: 'pointer',
+              cursor: hasSubmitted ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '10px'
             }}
-            onMouseOver={(e) => e.target.style.opacity = '0.9'}
-            onMouseOut={(e) => e.target.style.opacity = '1'}
+            onMouseOver={(e) => !hasSubmitted && (e.target.style.opacity = '0.9')}
+            onMouseOut={(e) => !hasSubmitted && (e.target.style.opacity = '1')}
           >
             <span style={{ fontSize: '24px' }}>{isListening ? '⏸' : '🎤'}</span>
             {isListening ? 'Stop Dictating' : 'Start Dictating'}
@@ -361,6 +370,7 @@ export default function TypingTest({ onComplete }) {
             spellCheck="false"
             autoComplete="off"
             autoCorrect="off"
+            disabled={hasSubmitted}
             style={{
               width: '100%',
               padding: '16px',
@@ -370,7 +380,8 @@ export default function TypingTest({ onComplete }) {
               outline: 'none',
               fontFamily: 'Georgia, serif',
               lineHeight: '1.8',
-              resize: 'vertical'
+              resize: 'vertical',
+              opacity: hasSubmitted ? 0.6 : 1
             }}
           />
         </div>
@@ -410,21 +421,22 @@ export default function TypingTest({ onComplete }) {
         {/* Submit Button */}
         <button
           onClick={handleSubmit}
+          disabled={hasSubmitted}
           style={{
             width: '100%',
             padding: '16px',
             fontSize: '18px',
             fontWeight: 'bold',
             color: 'white',
-            background: '#1d5693',
+            background: hasSubmitted ? '#ccc' : '#1d5693',
             border: 'none',
             borderRadius: '8px',
-            cursor: 'pointer'
+            cursor: hasSubmitted ? 'not-allowed' : 'pointer'
           }}
-          onMouseOver={(e) => e.target.style.background = '#002060'}
-          onMouseOut={(e) => e.target.style.background = '#1d5693'}
+          onMouseOver={(e) => !hasSubmitted && (e.target.style.background = '#002060')}
+          onMouseOut={(e) => !hasSubmitted && (e.target.style.background = '#1d5693')}
         >
-          Submit Dictation Test
+          {hasSubmitted ? 'Submitting...' : 'Submit Dictation Test'}
         </button>
 
         <p style={{
