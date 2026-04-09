@@ -28,6 +28,7 @@ export default function AdminDashboard() {
         'https://script.google.com/macros/s/AKfycbzWcxmFZ2S4upR2oUbRpolwg4jL2zvDQX-5kSR6AM3J6b1HASL07QS5-1jMHvbI1yHYIg/exec?action=getResults'
       );
       const data = await response.json();
+      console.log('Fetched results:', data.results); // Debug log
       setResults(data.results || []);
     } catch (error) {
       console.error('Error fetching results:', error);
@@ -59,9 +60,9 @@ export default function AdminDashboard() {
       r.assessmentCode,
       r.spellingScore,
       r.grammarScore,
-      r.readingWPM,
+      r.readingWpm,
       r.readingAccuracy,
-      r.typingWPM,
+      r.typingWpm,
       r.typingAccuracy,
       r.overallScore,
       `"${r.recommendation}"`
@@ -167,7 +168,7 @@ export default function AdminDashboard() {
   // Filtering and Sorting
   const filteredResults = filterRecommendation === 'ALL' 
     ? results 
-    : results.filter(r => r.recommendation.includes(filterRecommendation));
+    : results.filter(r => r.recommendation && r.recommendation.includes(filterRecommendation));
 
   const sortedResults = [...filteredResults].sort((a, b) => {
     let aVal = a[sortField];
@@ -340,62 +341,64 @@ export default function AdminDashboard() {
                     }}
                   >
                     <td style={tableCellStyle}>
-                      {new Date(result.timestamp).toLocaleString('en-NZ', {
+                      {result.timestamp ? new Date(result.timestamp).toLocaleString('en-NZ', {
                         day: '2-digit',
                         month: '2-digit',
                         year: '2-digit',
                         hour: '2-digit',
                         minute: '2-digit'
-                      })}
+                      }) : 'N/A'}
                     </td>
                     <td style={{...tableCellStyle, fontWeight: 'bold'}}>
-                      {result.candidateName}
+                      {result.candidateName || 'N/A'}
                     </td>
                     <td style={tableCellStyle}>
-                      <a 
-                        href={`mailto:${result.candidateEmail}`}
-                        style={{ color: '#1d5693', textDecoration: 'none' }}
-                      >
-                        {result.candidateEmail}
-                      </a>
+                      {result.candidateEmail ? (
+                        <a 
+                          href={`mailto:${result.candidateEmail}`}
+                          style={{ color: '#1d5693', textDecoration: 'none' }}
+                        >
+                          {result.candidateEmail}
+                        </a>
+                      ) : 'N/A'}
                     </td>
                     <td style={{...tableCellStyle, fontFamily: 'monospace', fontSize: '12px'}}>
-                      {result.assessmentCode}
+                      {result.assessmentCode || 'N/A'}
                     </td>
                     <td style={{...tableCellStyle, textAlign: 'center'}}>
-                      <span style={getScoreStyle(result.spellingScore)}>
-                        {result.spellingScore}%
+                      <span style={getScoreStyle(parseFloat(result.spellingScore) || 0)}>
+                        {Math.round(parseFloat(result.spellingScore) || 0)}%
                       </span>
                     </td>
                     <td style={{...tableCellStyle, textAlign: 'center'}}>
-                      <span style={getScoreStyle(result.grammarScore)}>
-                        {result.grammarScore}%
+                      <span style={getScoreStyle(parseFloat(result.grammarScore) || 0)}>
+                        {Math.round(parseFloat(result.grammarScore) || 0)}%
                       </span>
                     </td>
                     <td style={{...tableCellStyle, textAlign: 'center'}}>
-                      {result.readingWPM}
+                      {Math.round(parseFloat(result.readingWpm) || 0)}
                     </td>
                     <td style={{...tableCellStyle, textAlign: 'center'}}>
-                      <span style={getScoreStyle(result.readingAccuracy)}>
-                        {result.readingAccuracy}%
+                      <span style={getScoreStyle(parseFloat(result.readingAccuracy) || 0)}>
+                        {Math.round(parseFloat(result.readingAccuracy) || 0)}%
                       </span>
                     </td>
                     <td style={{...tableCellStyle, textAlign: 'center'}}>
-                      {result.typingWPM}
+                      {Math.round(parseFloat(result.typingWpm) || 0)}
                     </td>
                     <td style={{...tableCellStyle, textAlign: 'center'}}>
-                      <span style={getScoreStyle(result.typingAccuracy)}>
-                        {result.typingAccuracy}%
+                      <span style={getScoreStyle(parseFloat(result.typingAccuracy) || 0)}>
+                        {Math.round(parseFloat(result.typingAccuracy) || 0)}%
                       </span>
                     </td>
                     <td style={{...tableCellStyle, textAlign: 'center', fontWeight: 'bold'}}>
-                      <span style={getScoreStyle(result.overallScore, true)}>
-                        {result.overallScore}%
+                      <span style={getScoreStyle(parseFloat(result.overallScore) || 0, true)}>
+                        {Math.round(parseFloat(result.overallScore) || 0)}%
                       </span>
                     </td>
                     <td style={tableCellStyle}>
-                      <span style={getRecommendationStyle(result.recommendation)}>
-                        {result.recommendation.split(' - ')[0]}
+                      <span style={getRecommendationStyle(result.recommendation || '')}>
+                        {(result.recommendation || 'N/A').split(' - ')[0]}
                       </span>
                     </td>
                   </tr>
@@ -423,7 +426,7 @@ const tableCellStyle = {
 };
 
 function getScoreStyle(score, isOverall = false) {
-  const numScore = typeof score === 'string' ? parseInt(score) : score;
+  const numScore = typeof score === 'string' ? parseFloat(score) : score;
   let color = '#4caf50';
   if (numScore < 60) color = '#f44336';
   else if (numScore < 75) color = '#ff9800';

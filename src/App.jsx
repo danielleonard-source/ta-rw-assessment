@@ -113,13 +113,14 @@ function AssessmentApp() {
   };
 
   const submitResults = async (typingScore) => {
+    // All scores are already in percentage format (0-100)
     const finalScores = {
-      spellingScore: results.spelling.totalScore,
-      grammarScore: results.grammar.totalScore,
-      readingWPM: results.reading.averageWPM,
-      readingAccuracy: results.reading.accuracy,
-      typingWPM: typingScore.adjustedWPM,
-      typingAccuracy: typingScore.accuracy
+      spellingScore: results.spelling.totalScore,      // Already 0-100
+      grammarScore: results.grammar.totalScore,        // Already 0-100
+      readingWPM: results.reading.averageWPM,          // Raw number
+      readingAccuracy: results.reading.accuracy,       // Already 0-100
+      typingWPM: typingScore.adjustedWPM,              // Raw number
+      typingAccuracy: typingScore.accuracy             // Already 0-100
     };
 
     const overallGrade = calculateOverallGrade(finalScores);
@@ -130,9 +131,11 @@ function AssessmentApp() {
       candidateEmail: candidateInfo.candidateEmail,
       assessmentCode: candidateInfo.assessmentCode,
       ...finalScores,
-      overallScore: overallGrade.overallScore,
+      overallScore: overallGrade.overallScore,         // Already 0-100
       recommendation: overallGrade.recommendation
     };
+
+    console.log('Submitting data:', submissionData); // Debug log
 
     try {
       await fetch(GOOGLE_SCRIPT_URL, {
@@ -172,8 +175,9 @@ function App() {
     const url = window.location.href.toLowerCase();
     const hash = window.location.hash.toLowerCase();
     const pathname = window.location.pathname.toLowerCase();
+    const search = window.location.search.toLowerCase();
     
-    if (url.includes('admin') || hash.includes('admin') || pathname.includes('admin')) {
+    if (url.includes('admin') || hash.includes('admin') || pathname.includes('admin') || search.includes('admin')) {
       setShowAdmin(true);
     }
   }, []);
