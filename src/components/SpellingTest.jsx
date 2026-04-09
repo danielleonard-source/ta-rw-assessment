@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { spellingWords } from '../data/assessmentData';
 
 export default function SpellingTest({ onComplete }) {
+  const [hasStarted, setHasStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState(Array(spellingWords.length).fill(''));
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -25,10 +26,18 @@ export default function SpellingTest({ onComplete }) {
     }
   };
 
-  // Auto-play on component mount and word change
+  // Auto-play on word change (but not on initial mount)
   useEffect(() => {
-    speakWord();
+    if (hasStarted && currentIndex > 0) {
+      speakWord();
+    }
   }, [currentIndex]);
+
+  const handleStart = () => {
+    setHasStarted(true);
+    // Play first word after starting
+    setTimeout(() => speakWord(), 300);
+  };
 
   const handleNext = () => {
     const newAnswers = [...answers];
@@ -51,6 +60,98 @@ export default function SpellingTest({ onComplete }) {
     setCurrentIndex(currentIndex - 1);
     setCurrentAnswer(answers[currentIndex - 1]);
   };
+
+  if (!hasStarted) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#f5f5f5',
+        padding: '40px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          maxWidth: '800px',
+          background: 'white',
+          borderRadius: '12px',
+          padding: '40px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        }}>
+          <h2 style={{
+            fontSize: '28px',
+            color: '#002060',
+            marginBottom: '20px'
+          }}>
+            Spelling Assessment
+          </h2>
+
+          <div style={{
+            background: '#f0f7ff',
+            border: '2px solid #009bd8',
+            borderRadius: '8px',
+            padding: '25px',
+            marginBottom: '30px'
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              color: '#002060',
+              marginBottom: '15px'
+            }}>
+              Instructions:
+            </h3>
+            <ul style={{
+              color: '#333',
+              lineHeight: '1.8',
+              paddingLeft: '20px'
+            }}>
+              <li>You will hear <strong>20 words</strong> spoken aloud</li>
+              <li><strong>Listen carefully</strong> to each word</li>
+              <li><strong>Type the word</strong> exactly as you hear it</li>
+              <li>You can <strong>replay</strong> each word as many times as needed</li>
+              <li>Click <strong>"Next Word"</strong> when you're ready to move on</li>
+            </ul>
+          </div>
+
+          <div style={{
+            background: '#fff3e0',
+            border: '2px solid #ff9800',
+            borderRadius: '8px',
+            padding: '20px',
+            marginBottom: '30px'
+          }}>
+            <p style={{
+              margin: 0,
+              color: '#e65100',
+              fontSize: '16px',
+              lineHeight: '1.6'
+            }}>
+              <strong>⚠️ Important:</strong> Spell-check is disabled. Type carefully and check your spelling before moving to the next word.
+            </p>
+          </div>
+
+          <button
+            onClick={handleStart}
+            style={{
+              width: '100%',
+              padding: '18px',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              color: 'white',
+              background: '#1d5693',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => e.target.style.background = '#002060'}
+            onMouseOut={(e) => e.target.style.background = '#1d5693'}
+          >
+            Begin Spelling Test
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{

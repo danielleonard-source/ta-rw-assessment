@@ -58,6 +58,11 @@ export function scoreGrammar(userAnswer, correctAnswer) {
 
 // Calculate typing WPM with spelling accuracy (ignore grammar/punctuation)
 export function calculateTypingScore(typedText, referenceText, timeInSeconds) {
+  console.log('=== TYPING SCORE CALCULATION ===');
+  console.log('Typed text:', typedText);
+  console.log('Reference text:', referenceText);
+  console.log('Time in seconds:', timeInSeconds);
+  
   // Clean text for comparison (remove punctuation for word matching)
   const cleanTyped = typedText.trim().toLowerCase().replace(/[.,;:!?'"()-]/g, '');
   const cleanReference = referenceText.trim().toLowerCase().replace(/[.,;:!?'"()-]/g, '');
@@ -66,9 +71,14 @@ export function calculateTypingScore(typedText, referenceText, timeInSeconds) {
   const typedWords = cleanTyped.split(/\s+/).filter(w => w.length > 0);
   const referenceWords = cleanReference.split(/\s+/).filter(w => w.length > 0);
   
+  console.log('Typed words count:', typedWords.length);
+  console.log('Reference words count:', referenceWords.length);
+  
   // Calculate WPM based on words typed and time elapsed
   const wordCount = typedWords.length;
   const rawWPM = timeInSeconds > 0 ? Math.round((wordCount / timeInSeconds) * 60) : 0;
+  
+  console.log('Raw WPM calculation:', `(${wordCount} / ${timeInSeconds}) * 60 = ${rawWPM}`);
 
   // Calculate spelling accuracy - compare ONLY the words typed against reference
   let correctWords = 0;
@@ -86,27 +96,28 @@ export function calculateTypingScore(typedText, referenceText, timeInSeconds) {
     }
   }
   
+  console.log('Correct words:', correctWords, 'out of', typedWords.length);
+  
   // Spelling accuracy: correct words out of words TYPED (not total reference words)
   const spellingAccuracy = typedWords.length > 0 
     ? Math.round((correctWords / typedWords.length) * 100) 
     : 0;
 
-  // Overall accuracy for typing test (character-level for general accuracy)
-  const distance = levenshteinDistance(typedText.trim(), referenceText.trim());
-  const maxLength = Math.max(typedText.length, referenceText.length);
-  const overallAccuracy = maxLength > 0 
-    ? Math.round((1 - (distance / maxLength)) * 100)
+  // Overall typing accuracy based on words typed vs reference words typed
+  const overallAccuracy = typedWords.length > 0
+    ? Math.round((correctWords / typedWords.length) * 100)
     : 0;
 
-  // Adjusted WPM: penalize for spelling errors
-  const accuracyPenalty = (100 - spellingAccuracy);
-  const adjustedWPM = Math.max(0, Math.round(rawWPM - (accuracyPenalty * 0.5)));
+  console.log('Spelling accuracy:', spellingAccuracy);
+  console.log('Overall accuracy:', overallAccuracy);
+  console.log('Raw WPM (FINAL):', rawWPM);
+  console.log('=== END CALCULATION ===');
 
   return {
     rawWPM: rawWPM,
     accuracy: overallAccuracy,
-    adjustedWPM: adjustedWPM,
-    errors: distance,
+    adjustedWPM: rawWPM,  // Use rawWPM as the final WPM (no penalty)
+    errors: Math.round(typedWords.length - correctWords),
     spellingAccuracy: spellingAccuracy,
     grammarAccuracy: 0  // Not used for typing test
   };
@@ -129,11 +140,17 @@ export function calculateOverallGrade(scores) {
     typingSpellingScore
   } = scores;
 
+  console.log('=== OVERALL GRADE CALCULATION ===');
+  console.log('Input scores:', scores);
+
   // Calculate AVERAGE spelling (test + typing spelling only)
   const avgSpellingScore = (spellingScore + typingSpellingScore) / 2;
   
   // Grammar score is ONLY from the grammar test (no typing grammar)
   const avgGrammarScore = grammarScore;
+
+  console.log('Average spelling:', avgSpellingScore);
+  console.log('Grammar (test only):', avgGrammarScore);
 
   // Weighted scoring (priority order: spelling/grammar > reading > typing speed)
   const spellingGrammarWeight = 0.40;
@@ -146,6 +163,8 @@ export function calculateOverallGrade(scores) {
   const readingWPMNormalized = Math.min(100, (readingWPM / 250) * 100); // 250 WPM = 100%
   const typingWPMNormalized = Math.min(100, (typingWPM / 60) * 100); // 60 WPM = 100%
 
+  console.log('Typing WPM normalized:', typingWPMNormalized, 'from', typingWPM, 'WPM');
+
   // Combined scores
   const spellingGrammarCombined = (spellingNormalized + grammarNormalized) / 2;
   const readingCombined = (readingWPMNormalized * 0.6) + (readingAccuracy * 0.4);
@@ -156,6 +175,8 @@ export function calculateOverallGrade(scores) {
     (readingCombined * readingWeight) +
     (typingCombined * typingWeight);
 
+  console.log('Weighted overall score:', weightedScore);
+
   // Determine recommendation (using AVERAGE spelling and grammar from test only)
   let recommendation = '';
   if (weightedScore >= 75 && avgSpellingScore >= 70 && avgGrammarScore >= 70 && typingWPM >= 35) {
@@ -165,6 +186,9 @@ export function calculateOverallGrade(scores) {
   } else {
     recommendation = 'NOT RECOMMENDED - Does not meet minimum competency standards';
   }
+
+  console.log('Recommendation:', recommendation);
+  console.log('=== END OVERALL GRADE ===');
 
   return {
     overallScore: Math.round(weightedScore),

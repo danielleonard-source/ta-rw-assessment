@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { grammarSentences } from '../data/assessmentData';
 
 export default function GrammarTest({ onComplete }) {
+  const [hasStarted, setHasStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState(Array(grammarSentences.length).fill(''));
   const [currentAnswer, setCurrentAnswer] = useState('');
 
   const currentSentence = grammarSentences[currentIndex];
+
+  const handleStart = () => {
+    setHasStarted(true);
+  };
 
   const handleNext = () => {
     const newAnswers = [...answers];
@@ -30,6 +35,98 @@ export default function GrammarTest({ onComplete }) {
     setCurrentAnswer(answers[currentIndex - 1]);
   };
 
+  if (!hasStarted) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#f5f5f5',
+        padding: '40px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          maxWidth: '800px',
+          background: 'white',
+          borderRadius: '12px',
+          padding: '40px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        }}>
+          <h2 style={{
+            fontSize: '28px',
+            color: '#002060',
+            marginBottom: '20px'
+          }}>
+            Grammar Assessment
+          </h2>
+
+          <div style={{
+            background: '#f0f7ff',
+            border: '2px solid #009bd8',
+            borderRadius: '8px',
+            padding: '25px',
+            marginBottom: '30px'
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              color: '#002060',
+              marginBottom: '15px'
+            }}>
+              Instructions:
+            </h3>
+            <ul style={{
+              color: '#333',
+              lineHeight: '1.8',
+              paddingLeft: '20px'
+            }}>
+              <li>You will see <strong>15 sentences</strong> with grammar errors</li>
+              <li><strong>Read each sentence carefully</strong></li>
+              <li><strong>Correct the errors</strong> and rewrite the sentence properly</li>
+              <li>Fix spelling, punctuation, capitalization, and grammar</li>
+              <li>Click <strong>"Next Sentence"</strong> when ready to move on</li>
+            </ul>
+          </div>
+
+          <div style={{
+            background: '#e8f5e9',
+            border: '2px solid #4caf50',
+            borderRadius: '8px',
+            padding: '20px',
+            marginBottom: '30px'
+          }}>
+            <p style={{
+              margin: 0,
+              color: '#2e7d32',
+              fontSize: '16px',
+              lineHeight: '1.6'
+            }}>
+              <strong>💡 Tip:</strong> Look for errors in spelling, subject-verb agreement, punctuation, and word choice.
+            </p>
+          </div>
+
+          <button
+            onClick={handleStart}
+            style={{
+              width: '100%',
+              padding: '18px',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              color: 'white',
+              background: '#1d5693',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => e.target.style.background = '#002060'}
+            onMouseOut={(e) => e.target.style.background = '#1d5693'}
+          >
+            Begin Grammar Test
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -37,7 +134,7 @@ export default function GrammarTest({ onComplete }) {
       padding: '40px 20px'
     }}>
       <div style={{
-        maxWidth: '900px',
+        maxWidth: '800px',
         margin: '0 auto',
         background: 'white',
         borderRadius: '12px',
@@ -55,10 +152,10 @@ export default function GrammarTest({ onComplete }) {
             color: '#002060',
             marginBottom: '10px'
           }}>
-            Grammar & Punctuation Assessment
+            Grammar Assessment
           </h2>
           <p style={{ color: '#666', fontSize: '16px' }}>
-            Each sentence contains one or more errors. Retype the sentence with all corrections made.
+            Read each sentence carefully and correct any grammar, spelling, or punctuation errors.
           </p>
         </div>
 
@@ -94,52 +191,33 @@ export default function GrammarTest({ onComplete }) {
 
         {/* Incorrect Sentence Display */}
         <div style={{
-          background: '#fff3e0',
-          border: '2px solid #ff9800',
-          borderRadius: '12px',
-          padding: '25px',
-          marginBottom: '25px'
+          background: '#ffebee',
+          border: '2px solid #f44336',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: '30px'
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '15px'
+          <label style={{
+            display: 'block',
+            marginBottom: '10px',
+            color: '#c62828',
+            fontSize: '14px',
+            fontWeight: 'bold'
           }}>
-            <span style={{
-              background: '#ff9800',
-              color: 'white',
-              padding: '4px 12px',
-              borderRadius: '4px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              marginRight: '12px'
-            }}>
-              CONTAINS ERRORS
-            </span>
-            <span style={{ color: '#666', fontSize: '14px' }}>
-              Difficulty: {' '}
-              <span style={{
-                color: currentSentence.difficulty === 1 ? '#4caf50' :
-                       currentSentence.difficulty === 2 ? '#ff9800' : '#f44336',
-                fontWeight: 'bold'
-              }}>
-                {currentSentence.difficulty === 1 ? 'Basic' :
-                 currentSentence.difficulty === 2 ? 'Intermediate' : 'Advanced'}
-              </span>
-            </span>
-          </div>
+            INCORRECT SENTENCE (fix the errors):
+          </label>
           <p style={{
             fontSize: '18px',
-            lineHeight: '1.8',
             color: '#333',
-            fontFamily: 'Georgia, serif',
-            margin: 0
+            margin: 0,
+            lineHeight: '1.6',
+            fontFamily: 'Georgia, serif'
           }}>
             {currentSentence.incorrect}
           </p>
         </div>
 
-        {/* Correction Input */}
+        {/* Input Field */}
         <div style={{ marginBottom: '30px' }}>
           <label style={{
             display: 'block',
@@ -153,9 +231,9 @@ export default function GrammarTest({ onComplete }) {
           <textarea
             value={currentAnswer}
             onChange={(e) => setCurrentAnswer(e.target.value)}
-            placeholder="Retype the sentence with all corrections made..."
-            autoFocus
+            placeholder="Type your corrected sentence here..."
             rows={4}
+            autoFocus
             style={{
               width: '100%',
               padding: '16px',
@@ -170,14 +248,6 @@ export default function GrammarTest({ onComplete }) {
             onFocus={(e) => e.target.style.borderColor = '#009bd8'}
             onBlur={(e) => e.target.style.borderColor = '#ddd'}
           />
-          <p style={{
-            marginTop: '10px',
-            fontSize: '14px',
-            color: '#666',
-            fontStyle: 'italic'
-          }}>
-            💡 Tip: Check for spelling, grammar, punctuation, and word choice errors
-          </p>
         </div>
 
         {/* Navigation Buttons */}
@@ -224,24 +294,17 @@ export default function GrammarTest({ onComplete }) {
           </button>
         </div>
 
-        {/* Error Type Hint */}
+        {/* Hint */}
         <div style={{
           marginTop: '25px',
-          padding: '15px',
-          background: '#f0f7ff',
-          border: '1px solid #009bd8',
-          borderRadius: '8px'
+          padding: '12px',
+          background: '#f9f9f9',
+          borderRadius: '6px',
+          textAlign: 'center'
         }}>
-          <p style={{
-            margin: 0,
-            fontSize: '14px',
-            color: '#002060',
-            lineHeight: '1.6'
-          }}>
-            <strong>Common error types to watch for:</strong> Subject-verb agreement, homophones 
-            (their/there/they're, its/it's), punctuation, parallel structure, pronoun case, 
-            word choice (affect/effect, less/fewer)
-          </p>
+          <span style={{ color: '#666', fontSize: '14px' }}>
+            💡 Check for spelling, punctuation, capitalization, and grammar errors
+          </span>
         </div>
       </div>
     </div>

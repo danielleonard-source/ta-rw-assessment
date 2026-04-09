@@ -1,149 +1,134 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { readingPassages } from '../data/assessmentData';
 
 export default function ReadingTest({ onComplete }) {
+  const [hasStarted, setHasStarted] = useState(false);
   const [currentPassageIndex, setCurrentPassageIndex] = useState(0);
   const [isReading, setIsReading] = useState(true);
   const [startTime, setStartTime] = useState(null);
-  const [readingTime, setReadingTime] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [passageResults, setPassageResults] = useState([]);
+  const [results, setResults] = useState([]);
 
   const currentPassage = readingPassages[currentPassageIndex];
 
-  useEffect(() => {
-    if (isReading) {
-      setStartTime(Date.now());
-    }
-  }, [currentPassageIndex]);
+  const handleStart = () => {
+    setHasStarted(true);
+    setStartTime(Date.now());
+  };
 
   const handleFinishReading = () => {
-    const endTime = Date.now();
-    const timeInSeconds = (endTime - startTime) / 1000;
-    setReadingTime(timeInSeconds);
+    const readingTime = (Date.now() - startTime) / 1000;
     setIsReading(false);
   };
 
-  const handleAnswerChange = (questionId, optionIndex) => {
+  const handleAnswerChange = (questionId, answer) => {
     setAnswers({
       ...answers,
-      [questionId]: optionIndex
+      [questionId]: answer
     });
   };
 
   const handleSubmitPassage = () => {
-    const result = {
+    const readingTime = isReading ? (Date.now() - startTime) / 1000 : 
+                        results.find(r => r.passageId === currentPassage.id)?.readingTime || 0;
+
+    const passageResult = {
       passageId: currentPassage.id,
-      readingTime,
       answers,
-      wordCount: currentPassage.wordCount
+      wordCount: currentPassage.wordCount,
+      readingTime
     };
 
-    const newResults = [...passageResults, result];
-    setPassageResults(newResults);
+    const newResults = [...results.filter(r => r.passageId !== currentPassage.id), passageResult];
+    setResults(newResults);
 
     if (currentPassageIndex < readingPassages.length - 1) {
-      // Move to next passage
       setCurrentPassageIndex(currentPassageIndex + 1);
       setIsReading(true);
+      setStartTime(Date.now());
       setAnswers({});
-      setReadingTime(0);
     } else {
-      // Complete reading test
       onComplete(newResults);
     }
   };
 
-  if (isReading) {
+  const allQuestionsAnswered = currentPassage.questions.every(q => answers[q.id]);
+
+  if (!hasStarted) {
     return (
       <div style={{
         minHeight: '100vh',
         background: '#f5f5f5',
-        padding: '40px 20px'
+        padding: '40px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
         <div style={{
-          maxWidth: '900px',
-          margin: '0 auto',
+          maxWidth: '800px',
           background: 'white',
           borderRadius: '12px',
           padding: '40px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
         }}>
-          {/* Header */}
+          <h2 style={{
+            fontSize: '28px',
+            color: '#002060',
+            marginBottom: '20px'
+          }}>
+            Reading Comprehension Assessment
+          </h2>
+
           <div style={{
-            borderBottom: '3px solid #1d5693',
-            paddingBottom: '20px',
+            background: '#f0f7ff',
+            border: '2px solid #009bd8',
+            borderRadius: '8px',
+            padding: '25px',
             marginBottom: '30px'
           }}>
-            <h2 style={{
-              fontSize: '28px',
+            <h3 style={{
+              fontSize: '18px',
               color: '#002060',
-              marginBottom: '10px'
+              marginBottom: '15px'
             }}>
-              Reading Comprehension Assessment
-            </h2>
-            <p style={{ color: '#666', fontSize: '16px' }}>
-              Passage {currentPassageIndex + 1} of {readingPassages.length} • 
-              Read carefully - your reading speed is being timed
-            </p>
+              Instructions:
+            </h3>
+            <ul style={{
+              color: '#333',
+              lineHeight: '1.8',
+              paddingLeft: '20px'
+            }}>
+              <li>You will read <strong>2 passages</strong></li>
+              <li><strong>Read each passage carefully</strong> - your reading speed will be timed</li>
+              <li>Click <strong>"Finish Reading"</strong> when done</li>
+              <li><strong>Answer comprehension questions</strong> about each passage</li>
+              <li>This tests both <strong>reading speed and comprehension</strong></li>
+            </ul>
           </div>
 
-          {/* Timer indicator */}
           <div style={{
             background: '#fff3e0',
             border: '2px solid #ff9800',
             borderRadius: '8px',
-            padding: '15px',
-            marginBottom: '30px',
-            textAlign: 'center'
+            padding: '20px',
+            marginBottom: '30px'
           }}>
             <p style={{
               margin: 0,
               color: '#e65100',
               fontSize: '16px',
-              fontWeight: 'bold'
+              lineHeight: '1.6'
             }}>
-              ⏱ Timer is running - Click "I've Finished Reading" when done
+              <strong>⚠️ Important:</strong> Read at your natural pace for best comprehension. The timer starts when you click "Begin Reading Test".
             </p>
           </div>
 
-          {/* Passage */}
-          <div style={{
-            background: '#f9f9f9',
-            border: '1px solid #e0e0e0',
-            borderRadius: '8px',
-            padding: '30px',
-            marginBottom: '30px'
-          }}>
-            <h3 style={{
-              fontSize: '22px',
-              color: '#002060',
-              marginBottom: '20px',
-              fontFamily: 'Georgia, serif'
-            }}>
-              {currentPassage.title}
-            </h3>
-            <div style={{
-              fontSize: '17px',
-              lineHeight: '1.8',
-              color: '#333',
-              fontFamily: 'Georgia, serif'
-            }}>
-              {currentPassage.text.split('\n\n').map((paragraph, idx) => (
-                <p key={idx} style={{ marginBottom: '20px' }}>
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </div>
-
-          {/* Finish Reading Button */}
           <button
-            onClick={handleFinishReading}
+            onClick={handleStart}
             style={{
               width: '100%',
-              padding: '16px',
-              fontSize: '18px',
+              padding: '18px',
+              fontSize: '20px',
               fontWeight: 'bold',
               color: 'white',
               background: '#1d5693',
@@ -154,24 +139,12 @@ export default function ReadingTest({ onComplete }) {
             onMouseOver={(e) => e.target.style.background = '#002060'}
             onMouseOut={(e) => e.target.style.background = '#1d5693'}
           >
-            I've Finished Reading - Continue to Questions →
+            Begin Reading Test
           </button>
-
-          <p style={{
-            marginTop: '15px',
-            fontSize: '14px',
-            color: '#666',
-            textAlign: 'center'
-          }}>
-            Word count: {currentPassage.wordCount} words
-          </p>
         </div>
       </div>
     );
   }
-
-  // Questions view
-  const allQuestionsAnswered = currentPassage.questions.every(q => answers[q.id] !== undefined);
 
   return (
     <div style={{
@@ -198,130 +171,155 @@ export default function ReadingTest({ onComplete }) {
             color: '#002060',
             marginBottom: '10px'
           }}>
-            Comprehension Questions
+            Reading Comprehension - Passage {currentPassageIndex + 1} of {readingPassages.length}
           </h2>
           <p style={{ color: '#666', fontSize: '16px' }}>
-            {currentPassage.title} • Answer all {currentPassage.questions.length} questions
+            {isReading ? 'Read the passage below. Click "Finish Reading" when done.' : 'Answer the comprehension questions.'}
           </p>
         </div>
 
-        {/* Reading Time Display */}
-        <div style={{
-          background: '#e8f5e9',
-          border: '2px solid #4caf50',
-          borderRadius: '8px',
-          padding: '15px',
-          marginBottom: '30px',
-          textAlign: 'center'
-        }}>
-          <p style={{
-            margin: 0,
-            color: '#2e7d32',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}>
-            ✓ Reading completed in {Math.round(readingTime)} seconds 
-            ({Math.round((currentPassage.wordCount / readingTime) * 60)} words per minute)
-          </p>
-        </div>
-
-        {/* Questions */}
-        {currentPassage.questions.map((question, idx) => (
-          <div
-            key={question.id}
-            style={{
-              marginBottom: '30px',
-              padding: '25px',
+        {/* Reading Passage */}
+        {isReading && (
+          <div>
+            <div style={{
               background: '#f9f9f9',
+              border: '2px solid #e0e0e0',
               borderRadius: '8px',
-              border: answers[question.id] !== undefined ? '2px solid #4caf50' : '2px solid #e0e0e0'
-            }}
-          >
-            <p style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: '#002060',
-              marginBottom: '15px'
+              padding: '30px',
+              marginBottom: '30px'
             }}>
-              {idx + 1}. {question.question}
-            </p>
+              <h3 style={{
+                fontSize: '22px',
+                color: '#002060',
+                marginBottom: '20px'
+              }}>
+                {currentPassage.title}
+              </h3>
+              <div style={{
+                fontSize: '16px',
+                lineHeight: '1.8',
+                color: '#333',
+                fontFamily: 'Georgia, serif'
+              }}>
+                {currentPassage.text.split('\n\n').map((paragraph, idx) => (
+                  <p key={idx} style={{ marginBottom: '15px' }}>
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </div>
 
-            {question.options.map((option, optionIdx) => (
-              <label
-                key={optionIdx}
+            <button
+              onClick={handleFinishReading}
+              style={{
+                width: '100%',
+                padding: '16px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: 'white',
+                background: '#1d5693',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#002060'}
+              onMouseOut={(e) => e.target.style.background = '#1d5693'}
+            >
+              Finish Reading → Answer Questions
+            </button>
+          </div>
+        )}
+
+        {/* Comprehension Questions */}
+        {!isReading && (
+          <div>
+            <div style={{
+              background: '#e8f5e9',
+              border: '2px solid #4caf50',
+              borderRadius: '8px',
+              padding: '20px',
+              marginBottom: '30px'
+            }}>
+              <p style={{
+                margin: 0,
+                color: '#2e7d32',
+                fontSize: '16px',
+                fontWeight: 'bold'
+              }}>
+                ✓ Reading Complete! Now answer the questions below.
+              </p>
+            </div>
+
+            {currentPassage.questions.map((question, qIdx) => (
+              <div
+                key={question.id}
                 style={{
-                  display: 'block',
-                  padding: '12px 16px',
-                  marginBottom: '10px',
-                  background: answers[question.id] === optionIdx ? '#e3f2fd' : 'white',
-                  border: answers[question.id] === optionIdx ? '2px solid #1d5693' : '2px solid #ddd',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => {
-                  if (answers[question.id] !== optionIdx) {
-                    e.currentTarget.style.background = '#f5f5f5';
-                    e.currentTarget.style.borderColor = '#999';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (answers[question.id] !== optionIdx) {
-                    e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.borderColor = '#ddd';
-                  }
+                  background: '#f9f9f9',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: '8px',
+                  padding: '25px',
+                  marginBottom: '20px'
                 }}
               >
-                <input
-                  type="radio"
-                  name={`question-${question.id}`}
-                  checked={answers[question.id] === optionIdx}
-                  onChange={() => handleAnswerChange(question.id, optionIdx)}
-                  style={{ marginRight: '12px' }}
-                />
-                <span style={{
+                <p style={{
                   fontSize: '16px',
-                  color: '#333'
+                  fontWeight: 'bold',
+                  color: '#002060',
+                  marginBottom: '15px'
                 }}>
-                  {option}
-                </span>
-              </label>
+                  Question {qIdx + 1}: {question.question}
+                </p>
+
+                {question.options.map((option) => (
+                  <label
+                    key={option}
+                    style={{
+                      display: 'block',
+                      padding: '12px 16px',
+                      marginBottom: '10px',
+                      background: answers[question.id] === option ? '#e3f2fd' : 'white',
+                      border: `2px solid ${answers[question.id] === option ? '#1d5693' : '#ddd'}`,
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name={question.id}
+                      value={option}
+                      checked={answers[question.id] === option}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      style={{ marginRight: '10px' }}
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
             ))}
+
+            <button
+              onClick={handleSubmitPassage}
+              disabled={!allQuestionsAnswered}
+              style={{
+                width: '100%',
+                padding: '16px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: 'white',
+                background: allQuestionsAnswered ? '#1d5693' : '#ccc',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: allQuestionsAnswered ? 'pointer' : 'not-allowed'
+              }}
+              onMouseOver={(e) => allQuestionsAnswered && (e.target.style.background = '#002060')}
+              onMouseOut={(e) => allQuestionsAnswered && (e.target.style.background = '#1d5693')}
+            >
+              {currentPassageIndex < readingPassages.length - 1 
+                ? 'Next Passage →' 
+                : 'Submit Reading Test'}
+            </button>
           </div>
-        ))}
-
-        {/* Submit Button */}
-        <button
-          onClick={handleSubmitPassage}
-          disabled={!allQuestionsAnswered}
-          style={{
-            width: '100%',
-            padding: '16px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: 'white',
-            background: allQuestionsAnswered ? '#1d5693' : '#ccc',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: allQuestionsAnswered ? 'pointer' : 'not-allowed'
-          }}
-          onMouseOver={(e) => allQuestionsAnswered && (e.target.style.background = '#002060')}
-          onMouseOut={(e) => allQuestionsAnswered && (e.target.style.background = '#1d5693')}
-        >
-          {currentPassageIndex < readingPassages.length - 1 
-            ? 'Continue to Next Passage →' 
-            : 'Submit Reading Test'}
-        </button>
-
-        {!allQuestionsAnswered && (
-          <p style={{
-            marginTop: '15px',
-            fontSize: '14px',
-            color: '#f44336',
-            textAlign: 'center'
-          }}>
-            Please answer all questions before continuing
-          </p>
         )}
       </div>
     </div>
