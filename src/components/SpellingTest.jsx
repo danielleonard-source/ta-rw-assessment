@@ -177,6 +177,10 @@ export default function SpellingTest({ onComplete }) {
             onChange={(e) => setCurrentAnswer(e.target.value)}
             placeholder="Type your answer here"
             autoFocus
+            spellCheck="false"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
             style={{
               width: '100%',
               padding: '16px',

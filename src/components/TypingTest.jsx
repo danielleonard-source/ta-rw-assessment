@@ -6,6 +6,48 @@ export default function TypingTest({ onComplete }) {
   const [isStarted, setIsStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes
   const [startTime, setStartTime] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = true;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = 'en-NZ'; // New Zealand English
+
+      recognitionInstance.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          setTypedText(prev => prev + finalTranscript);
+        }
+      };
+
+      recognitionInstance.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(recognitionInstance);
+    }
+  }, []);
 
   useEffect(() => {
     if (isStarted && timeRemaining > 0) {
@@ -15,6 +57,9 @@ export default function TypingTest({ onComplete }) {
 
       return () => clearInterval(timer);
     } else if (isStarted && timeRemaining === 0) {
+      if (isListening && recognition) {
+        recognition.stop();
+      }
       handleSubmit();
     }
   }, [isStarted, timeRemaining]);
@@ -24,7 +69,26 @@ export default function TypingTest({ onComplete }) {
     setStartTime(Date.now());
   };
 
+  const toggleDictation = () => {
+    if (!recognition) {
+      alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+      return;
+    }
+
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+    } else {
+      recognition.start();
+      setIsListening(true);
+    }
+  };
+
   const handleSubmit = () => {
+    if (isListening && recognition) {
+      recognition.stop();
+    }
+
     const endTime = Date.now();
     const actualTimeInSeconds = (endTime - startTime) / 1000;
     
@@ -63,7 +127,7 @@ export default function TypingTest({ onComplete }) {
             color: '#002060',
             marginBottom: '20px'
           }}>
-            Typing Speed Assessment
+            Dictation Test (Reader-Writer Assessment)
           </h2>
 
           <div style={{
@@ -85,11 +149,12 @@ export default function TypingTest({ onComplete }) {
               lineHeight: '1.8',
               paddingLeft: '20px'
             }}>
-              <li>You will have <strong>3 minutes</strong> to type the given text</li>
-              <li>Type as <strong>quickly and accurately</strong> as possible</li>
-              <li>The text will remain visible for reference</li>
-              <li>The timer starts when you click "Begin Typing Test"</li>
-              <li>You can submit early if you finish before time runs out</li>
+              <li>You will have <strong>3 minutes</strong> for this dictation test</li>
+              <li><strong>Read the passage</strong> on screen</li>
+              <li><strong>Dictate it aloud</strong> using the microphone button</li>
+              <li>You can also <strong>type manually</strong> if preferred</li>
+              <li>This tests your <strong>ability to dictate clearly</strong> as a Reader-Writer</li>
+              <li>The system will transcribe your speech automatically</li>
             </ul>
           </div>
 
@@ -106,9 +171,9 @@ export default function TypingTest({ onComplete }) {
               fontSize: '16px',
               lineHeight: '1.6'
             }}>
-              <strong>⚠️ Important:</strong> This is a <strong>transcription task</strong> - type 
-              the text exactly as shown, including all punctuation and capitalization. Accuracy 
-              is just as important as speed.
+              <strong>⚠️ Important:</strong> This test simulates a <strong>Reader-Writer scenario</strong> 
+              where you dictate student responses. Speak clearly and accurately, including punctuation 
+              (say "comma", "period", etc.).
             </p>
           </div>
 
@@ -128,7 +193,7 @@ export default function TypingTest({ onComplete }) {
             onMouseOver={(e) => e.target.style.background = '#002060'}
             onMouseOut={(e) => e.target.style.background = '#1d5693'}
           >
-            Begin Typing Test
+            Begin Dictation Test
           </button>
         </div>
       </div>
@@ -136,13 +201,13 @@ export default function TypingTest({ onComplete }) {
   }
 
   // Calculate current WPM
-  const currentWords = typedText.trim().split(/\s+/).length;
+  const currentWords = typedText.trim().split(/\s+/).filter(w => w.length > 0).length;
   const elapsedSeconds = 180 - timeRemaining;
   const currentWPM = elapsedSeconds > 0 ? Math.round((currentWords / elapsedSeconds) * 60) : 0;
 
-  // Calculate accuracy (rough estimate)
-  const accuracy = typedText.length > 0 
-    ? Math.round((Math.min(typedText.length, typingText.length) / typingText.length) * 100)
+  // Calculate progress
+  const progress = typedText.length > 0 
+    ? Math.round((typedText.length / typingText.length) * 100)
     : 0;
 
   return (
@@ -199,7 +264,7 @@ export default function TypingTest({ onComplete }) {
               fontWeight: 'bold',
               color: '#009bd8'
             }}>
-              {accuracy}%
+              {progress}%
             </div>
             <div style={{ fontSize: '14px', color: '#666' }}>Progress</div>
           </div>
@@ -219,7 +284,7 @@ export default function TypingTest({ onComplete }) {
             marginBottom: '15px',
             fontWeight: 'bold'
           }}>
-            TYPE THIS TEXT:
+            DICTATE THIS TEXT:
           </h3>
           <p style={{
             fontSize: '16px',
@@ -232,7 +297,52 @@ export default function TypingTest({ onComplete }) {
           </p>
         </div>
 
-        {/* Typing Area */}
+        {/* Dictation Controls */}
+        <div style={{
+          display: 'flex',
+          gap: '15px',
+          marginBottom: '25px',
+          alignItems: 'center'
+        }}>
+          <button
+            onClick={toggleDictation}
+            style={{
+              padding: '16px 32px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: 'white',
+              background: isListening ? '#f44336' : '#4caf50',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}
+            onMouseOver={(e) => e.target.style.opacity = '0.9'}
+            onMouseOut={(e) => e.target.style.opacity = '1'}
+          >
+            <span style={{ fontSize: '24px' }}>{isListening ? '⏸' : '🎤'}</span>
+            {isListening ? 'Stop Dictating' : 'Start Dictating'}
+          </button>
+
+          {isListening && (
+            <div style={{
+              padding: '8px 16px',
+              background: '#ffebee',
+              border: '2px solid #f44336',
+              borderRadius: '6px',
+              color: '#c62828',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              animation: 'pulse 1.5s infinite'
+            }}>
+              🔴 LISTENING...
+            </div>
+          )}
+        </div>
+
+        {/* Transcription Area */}
         <div style={{ marginBottom: '25px' }}>
           <label style={{
             display: 'block',
@@ -241,14 +351,16 @@ export default function TypingTest({ onComplete }) {
             fontSize: '16px',
             fontWeight: 'bold'
           }}>
-            YOUR TYPING:
+            YOUR DICTATION (You can also type manually):
           </label>
           <textarea
             value={typedText}
             onChange={(e) => setTypedText(e.target.value)}
-            placeholder="Start typing here..."
-            autoFocus
+            placeholder="Click 'Start Dictating' to speak, or type here manually..."
             rows={8}
+            spellCheck="false"
+            autoComplete="off"
+            autoCorrect="off"
             style={{
               width: '100%',
               padding: '16px',
@@ -276,7 +388,7 @@ export default function TypingTest({ onComplete }) {
               Characters: {typedText.length} / {typingText.length}
             </span>
             <span style={{ fontSize: '14px', color: '#666' }}>
-              {Math.round((typedText.length / typingText.length) * 100)}% Complete
+              {progress}% Complete
             </span>
           </div>
           <div style={{
@@ -287,7 +399,7 @@ export default function TypingTest({ onComplete }) {
             overflow: 'hidden'
           }}>
             <div style={{
-              width: `${Math.min(100, (typedText.length / typingText.length) * 100)}%`,
+              width: `${Math.min(100, progress)}%`,
               height: '100%',
               background: 'linear-gradient(90deg, #1d5693, #009bd8)',
               transition: 'width 0.3s'
@@ -312,7 +424,7 @@ export default function TypingTest({ onComplete }) {
           onMouseOver={(e) => e.target.style.background = '#002060'}
           onMouseOut={(e) => e.target.style.background = '#1d5693'}
         >
-          Submit Typing Test
+          Submit Dictation Test
         </button>
 
         <p style={{
@@ -326,6 +438,13 @@ export default function TypingTest({ onComplete }) {
             : 'Time is up! Click submit to complete the test'}
         </p>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
