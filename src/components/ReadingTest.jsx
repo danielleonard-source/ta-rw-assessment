@@ -6,6 +6,7 @@ export default function ReadingTest({ onComplete }) {
   const [currentPassageIndex, setCurrentPassageIndex] = useState(0);
   const [isReading, setIsReading] = useState(true);
   const [startTime, setStartTime] = useState(null);
+  const [currentReadingTime, setCurrentReadingTime] = useState(0);
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState([]);
 
@@ -13,11 +14,24 @@ export default function ReadingTest({ onComplete }) {
 
   const handleStart = () => {
     setHasStarted(true);
-    setStartTime(Date.now());
+    const now = Date.now();
+    setStartTime(now);
+    console.log('Reading test started at:', now);
   };
 
   const handleFinishReading = () => {
-    const readingTime = (Date.now() - startTime) / 1000;
+    const endTime = Date.now();
+    const readingTime = (endTime - startTime) / 1000;
+    
+    console.log('=== READING TIME CAPTURE ===');
+    console.log('Start time:', startTime);
+    console.log('End time:', endTime);
+    console.log('Reading time (seconds):', readingTime);
+    console.log('Word count:', currentPassage.wordCount);
+    console.log('WPM calculated:', Math.round((currentPassage.wordCount / readingTime) * 60));
+    console.log('=== END CAPTURE ===');
+    
+    setCurrentReadingTime(readingTime);
     setIsReading(false);
   };
 
@@ -29,25 +43,38 @@ export default function ReadingTest({ onComplete }) {
   };
 
   const handleSubmitPassage = () => {
-    const readingTime = isReading ? (Date.now() - startTime) / 1000 : 
-                        results.find(r => r.passageId === currentPassage.id)?.readingTime || 0;
-
     const passageResult = {
       passageId: currentPassage.id,
-      answers,
+      answers: { ...answers },
       wordCount: currentPassage.wordCount,
-      readingTime
+      readingTime: currentReadingTime
     };
 
-    const newResults = [...results.filter(r => r.passageId !== currentPassage.id), passageResult];
+    console.log('=== SUBMITTING PASSAGE ===');
+    console.log('Passage:', currentPassage.id);
+    console.log('Reading time:', currentReadingTime);
+    console.log('Word count:', currentPassage.wordCount);
+    console.log('Answers:', answers);
+    console.log('=== END SUBMIT ===');
+
+    const newResults = [...results, passageResult];
     setResults(newResults);
 
     if (currentPassageIndex < readingPassages.length - 1) {
       setCurrentPassageIndex(currentPassageIndex + 1);
       setIsReading(true);
-      setStartTime(Date.now());
+      const nextStartTime = Date.now();
+      setStartTime(nextStartTime);
+      setCurrentReadingTime(0);
       setAnswers({});
+      console.log('Starting next passage at:', nextStartTime);
     } else {
+      console.log('=== FINAL READING RESULTS ===');
+      newResults.forEach(r => {
+        const wpm = r.readingTime > 0 ? Math.round((r.wordCount / r.readingTime) * 60) : 0;
+        console.log(`Passage ${r.passageId}: ${r.wordCount} words / ${r.readingTime}s = ${wpm} WPM`);
+      });
+      console.log('=== END FINAL ===');
       onComplete(newResults);
     }
   };
@@ -119,7 +146,7 @@ export default function ReadingTest({ onComplete }) {
               fontSize: '16px',
               lineHeight: '1.6'
             }}>
-              <strong>⚠️ Important:</strong> Read at your natural pace for best comprehension. The timer starts when you click "Begin Reading Test".
+              <strong>Important:</strong> Read at your natural pace for best comprehension. The timer starts when you click "Begin Reading Test".
             </p>
           </div>
 
@@ -136,8 +163,6 @@ export default function ReadingTest({ onComplete }) {
               borderRadius: '8px',
               cursor: 'pointer'
             }}
-            onMouseOver={(e) => e.target.style.background = '#002060'}
-            onMouseOut={(e) => e.target.style.background = '#1d5693'}
           >
             Begin Reading Test
           </button>
@@ -160,7 +185,6 @@ export default function ReadingTest({ onComplete }) {
         padding: '40px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
       }}>
-        {/* Header */}
         <div style={{
           borderBottom: '3px solid #1d5693',
           paddingBottom: '20px',
@@ -178,7 +202,6 @@ export default function ReadingTest({ onComplete }) {
           </p>
         </div>
 
-        {/* Reading Passage */}
         {isReading && (
           <div>
             <div style={{
@@ -222,15 +245,12 @@ export default function ReadingTest({ onComplete }) {
                 borderRadius: '8px',
                 cursor: 'pointer'
               }}
-              onMouseOver={(e) => e.target.style.background = '#002060'}
-              onMouseOut={(e) => e.target.style.background = '#1d5693'}
             >
-              Finish Reading → Answer Questions
+              Finish Reading - Answer Questions
             </button>
           </div>
         )}
 
-        {/* Comprehension Questions */}
         {!isReading && (
           <div>
             <div style={{
@@ -246,7 +266,7 @@ export default function ReadingTest({ onComplete }) {
                 fontSize: '16px',
                 fontWeight: 'bold'
               }}>
-                ✓ Reading Complete! Now answer the questions below.
+                Reading Complete! Time: {Math.round(currentReadingTime)}s | WPM: {Math.round((currentPassage.wordCount / currentReadingTime) * 60)}
               </p>
             </div>
 
@@ -312,11 +332,9 @@ export default function ReadingTest({ onComplete }) {
                 borderRadius: '8px',
                 cursor: allQuestionsAnswered ? 'pointer' : 'not-allowed'
               }}
-              onMouseOver={(e) => allQuestionsAnswered && (e.target.style.background = '#002060')}
-              onMouseOut={(e) => allQuestionsAnswered && (e.target.style.background = '#1d5693')}
             >
               {currentPassageIndex < readingPassages.length - 1 
-                ? 'Next Passage →' 
+                ? 'Next Passage' 
                 : 'Submit Reading Test'}
             </button>
           </div>

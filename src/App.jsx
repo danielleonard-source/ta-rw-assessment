@@ -10,6 +10,8 @@ import { spellingWords, grammarSentences, readingPassages } from './data/assessm
 import { 
   scoreSpelling, 
   scoreGrammar, 
+  calculateSpellingBreakdown,
+  calculateGrammarBreakdown,
   calculateReadingWPM,
   calculateTypingScore,
   calculateOverallGrade,
@@ -34,45 +36,52 @@ function AssessmentApp() {
   };
 
   const handleSpellingComplete = (answers) => {
-    const scores = answers.map((answer, idx) => 
-      scoreSpelling(answer, spellingWords[idx].word)
-    );
-    const totalScore = Math.round(
-      (scores.reduce((sum, score) => sum + score, 0) / scores.length) * 100
-    );
-    
+    const breakdown = calculateSpellingBreakdown(answers, spellingWords);
     setResults(prev => ({
       ...prev,
-      spelling: { answers, scores, totalScore }
+      spelling: { answers, breakdown }
     }));
     setStage('grammar');
   };
 
   const handleGrammarComplete = (answers) => {
-    const scores = answers.map((answer, idx) => 
-      scoreGrammar(answer, grammarSentences[idx].correct)
-    );
-    const totalScore = Math.round(
-      (scores.reduce((sum, score) => sum + score, 0) / scores.length) * 100
-    );
-    
+    const breakdown = calculateGrammarBreakdown(answers, grammarSentences);
     setResults(prev => ({
       ...prev,
-      grammar: { answers, scores, totalScore }
+      grammar: { answers, breakdown }
     }));
     setStage('reading');
   };
 
   const handleReadingComplete = (passageResults) => {
+    console.log('=== APP.JSX READING PROCESSING ===');
+    console.log('Passage results received:', passageResults);
+    
     let totalCorrect = 0;
     let totalQuestions = 0;
     let totalWPM = 0;
+    let validWPMCount = 0;
 
     passageResults.forEach(result => {
       const passage = readingPassages.find(p => p.id === result.passageId);
-      const wpm = calculateReadingWPM(result.wordCount, result.readingTime);
-      totalWPM += wpm;
+      
+      // Calculate WPM for this passage
+      let wpm = 0;
+      if (result.readingTime > 0) {
+        wpm = Math.round((result.wordCount / result.readingTime) * 60);
+      }
+      
+      console.log(`Passage ${result.passageId}:`);
+      console.log(`  - Word count: ${result.wordCount}`);
+      console.log(`  - Reading time: ${result.readingTime}s`);
+      console.log(`  - WPM: ${wpm}`);
+      
+      if (wpm > 0) {
+        totalWPM += wpm;
+        validWPMCount++;
+      }
 
+      // Count correct answers
       passage.questions.forEach(question => {
         totalQuestions++;
         if (result.answers[question.id] === question.correct) {
@@ -81,8 +90,16 @@ function AssessmentApp() {
       });
     });
 
-    const averageWPM = Math.round(totalWPM / passageResults.length);
-    const accuracy = Math.round((totalCorrect / totalQuestions) * 100);
+    // Average WPM only from valid passages
+    const averageWPM = validWPMCount > 0 ? Math.round(totalWPM / validWPMCount) : 0;
+    const accuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+    console.log('=== FINAL READING SCORES ===');
+    console.log('Total WPM:', totalWPM);
+    console.log('Valid WPM count:', validWPMCount);
+    console.log('Average WPM:', averageWPM);
+    console.log('Accuracy:', accuracy);
+    console.log('=== END ===');
 
     setResults(prev => ({
       ...prev,
@@ -113,23 +130,19 @@ function AssessmentApp() {
   };
 
   const submitResults = async (typingScore) => {
-    // All scores are already in percentage format (0-100)
     const finalScores = {
-      spellingScore: results.spelling.totalScore,           // Test spelling
-      grammarScore: results.grammar.totalScore,             // Test grammar (only source)
+      spellingScore: results.spelling.breakdown.totalScore,
+      grammarScore: results.grammar.breakdown.totalScore,
       readingWPM: results.reading.averageWPM,
       readingAccuracy: results.reading.accuracy,
       typingWPM: typingScore.adjustedWPM,
       typingAccuracy: typingScore.accuracy,
-      typingSpellingScore: typingScore.spellingAccuracy    // Typing spelling only
+      typingSpellingScore: typingScore.spellingAccuracy
     };
 
     const overallGrade = calculateOverallGrade(finalScores);
 
-    // Calculate average spelling (test + typing)
     const avgSpelling = Math.round((finalScores.spellingScore + finalScores.typingSpellingScore) / 2);
-    
-    // Grammar is ONLY from grammar test (no typing grammar)
     const grammarScore = finalScores.grammarScore;
 
     const submissionData = {
@@ -137,17 +150,24 @@ function AssessmentApp() {
       candidateName: candidateInfo.candidateName,
       candidateEmail: candidateInfo.candidateEmail,
       assessmentCode: candidateInfo.assessmentCode,
-      spellingScore: avgSpelling,              // AVERAGE of test + typing
-      grammarScore: grammarScore,              // ONLY from grammar test
+      spellingScore: avgSpelling,
+      grammarScore: grammarScore,
       readingWPM: finalScores.readingWPM,
       readingAccuracy: finalScores.readingAccuracy,
       typingWPM: finalScores.typingWPM,
       typingAccuracy: finalScores.typingAccuracy,
       overallScore: overallGrade.overallScore,
-      recommendation: overallGrade.recommendation
+      recommendation: overallGrade.recommendation,
+      spellingBasic: results.spelling.breakdown.basic.score,
+      spellingIntermediate: results.spelling.breakdown.intermediate.score,
+      spellingAdvanced: results.spelling.breakdown.advanced.score,
+      spellingExpert: results.spelling.breakdown.expert.score,
+      grammarBasic: results.grammar.breakdown.basic.score,
+      grammarIntermediate: results.grammar.breakdown.intermediate.score,
+      grammarAdvanced: results.grammar.breakdown.advanced.score
     };
 
-    console.log('Submitting data:', submissionData); // Debug log
+    console.log('Submitting data:', submissionData);
 
     try {
       await fetch(GOOGLE_SCRIPT_URL, {
@@ -158,7 +178,6 @@ function AssessmentApp() {
         },
         body: JSON.stringify(submissionData)
       });
-
       console.log('Results submitted successfully');
     } catch (error) {
       console.error('Error submitting results:', error);
@@ -183,23 +202,16 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
 
   useEffect(() => {
-    // Check if URL contains "admin" in any form
     const url = window.location.href.toLowerCase();
-    const hash = window.location.hash.toLowerCase();
-    const pathname = window.location.pathname.toLowerCase();
-    const search = window.location.search.toLowerCase();
-    
-    if (url.includes('admin') || hash.includes('admin') || pathname.includes('admin') || search.includes('admin')) {
+    if (url.includes('admin')) {
       setShowAdmin(true);
     }
   }, []);
 
-  // Show admin dashboard if URL contains "admin"
   if (showAdmin) {
     return <AdminDashboard />;
   }
 
-  // Otherwise show assessment
   return <AssessmentApp />;
 }
 
