@@ -143,7 +143,7 @@ export const grammarSentences = [
   }
 ];
 
-// READING PASSAGES - 2 passages (shorter, easier)
+// READING PASSAGES - 2 passages
 export const readingPassages = [
   {
     id: 'passage1',
@@ -259,5 +259,5 @@ As a Teacher Aide providing SAC support, you have important responsibilities. Yo
   }
 ];
 
-// TYPING TEST PASSAGE - Shorter and simpler (110 words)
+// TYPING TEST PASSAGE - Shorter (110 words)
 export const typingText = `The student needs extra time and a reader-writer for the test. Read each question clearly and exactly as written. When the student gives their answer, write their words without correcting grammar or spelling. If they ask you to read back what they said, do so accurately. Your role is to provide access to the test, not to help with content. Speak clearly and at a steady pace. If the student cannot hear you, repeat the question. Always remain neutral and patient. Remember that you are there to support the student in showing their knowledge.`;
