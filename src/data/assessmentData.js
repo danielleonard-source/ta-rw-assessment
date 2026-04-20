@@ -1,283 +1,263 @@
-// Adult-level spelling assessment based on NZCER Adult Literacy standards
-// Progresses from common workplace words to academic/technical vocabulary
-
+// SPELLING WORDS - 20 total (5 basic, 6 intermediate, 5 advanced, 4 expert)
 export const spellingWords = [
-  // Level 1: Common workplace vocabulary (Years 8-9 equivalent)
-  { word: "necessary", audio: null, difficulty: 1 },
-  { word: "accommodation", audio: null, difficulty: 1 },
-  { word: "immediately", audio: null, difficulty: 1 },
-  { word: "separate", audio: null, difficulty: 1 },
-  { word: "definitely", audio: null, difficulty: 1 },
+  // BASIC (5 words) - Common 3-5 letter words
+  { word: 'their', difficulty: 1, category: 'basic' },
+  { word: 'could', difficulty: 1, category: 'basic' },
+  { word: 'where', difficulty: 1, category: 'basic' },
+  { word: 'would', difficulty: 1, category: 'basic' },
+  { word: 'which', difficulty: 1, category: 'basic' },
   
-  // Level 2: Professional vocabulary (Years 10-11 equivalent)
-  { word: "conscience", audio: null, difficulty: 2 },
-  { word: "privilege", audio: null, difficulty: 2 },
-  { word: "relevant", audio: null, difficulty: 2 },
-  { word: "occurred", audio: null, difficulty: 2 },
-  { word: "beginning", audio: null, difficulty: 2 },
+  // INTERMEDIATE (6 words) - 6-8 letter everyday words
+  { word: 'because', difficulty: 2, category: 'intermediate' },
+  { word: 'through', difficulty: 2, category: 'intermediate' },
+  { word: 'writing', difficulty: 2, category: 'intermediate' },
+  { word: 'student', difficulty: 2, category: 'intermediate' },
+  { word: 'between', difficulty: 2, category: 'intermediate' },
+  { word: 'teacher', difficulty: 2, category: 'intermediate' },
   
-  // Level 3: Academic/technical vocabulary (Years 12-13 equivalent)
-  { word: "consciousness", audio: null, difficulty: 3 },
-  { word: "bureaucracy", audio: null, difficulty: 3 },
-  { word: "Mediterranean", audio: null, difficulty: 3 },
-  { word: "pharmaceutical", audio: null, difficulty: 3 },
-  { word: "pseudonym", audio: null, difficulty: 3 },
+  // ADVANCED (5 words) - 9-11 letter professional vocabulary
+  { word: 'assessment', difficulty: 3, category: 'advanced' },
+  { word: 'necessary', difficulty: 3, category: 'advanced' },
+  { word: 'different', difficulty: 3, category: 'advanced' },
+  { word: 'important', difficulty: 3, category: 'advanced' },
+  { word: 'knowledge', difficulty: 3, category: 'advanced' },
   
-  // Level 4: Advanced technical/specialist vocabulary
-  { word: "conscientious", audio: null, difficulty: 4 },
-  { word: "entrepreneurial", audio: null, difficulty: 4 },
-  { word: "reconnaissance", audio: null, difficulty: 4 },
-  { word: "idiosyncrasy", audio: null, difficulty: 4 },
-  { word: "millennium", audio: null, difficulty: 4 }
+  // EXPERT (4 words) - 12+ letter complex words
+  { word: 'accommodation', difficulty: 4, category: 'expert' },
+  { word: 'particularly', difficulty: 4, category: 'expert' },
+  { word: 'professional', difficulty: 4, category: 'expert' },
+  { word: 'occasionally', difficulty: 4, category: 'expert' }
 ];
 
-// Sentences with deliberate errors for grammar assessment
-// Based on common adult literacy errors in NZ context
+// GRAMMAR SENTENCES - 15 total (5 basic, 6 intermediate, 4 advanced)
 export const grammarSentences = [
+  // BASIC (5 sentences)
   {
-    id: 1,
-    incorrect: "The students was working on there assignments.",
-    correct: "The students were working on their assignments.",
-    errors: ["subject-verb agreement", "homophone (there/their)"],
-    difficulty: 1
+    incorrect: 'the student need help with there work',
+    correct: 'The student needs help with their work.',
+    difficulty: 1,
+    category: 'basic',
+    errorType: 'subject-verb agreement, capitalization, homophone'
   },
   {
-    id: 2,
-    incorrect: "Between you and I, this project is challenging.",
-    correct: "Between you and me, this project is challenging.",
-    errors: ["pronoun case"],
-    difficulty: 2
+    incorrect: 'me and the teacher went to the meeting',
+    correct: 'The teacher and I went to the meeting.',
+    difficulty: 1,
+    category: 'basic',
+    errorType: 'pronoun order, capitalization'
   },
   {
-    id: 3,
-    incorrect: "The teacher asked the student to sit down and that he should open his book.",
-    correct: "The teacher asked the student to sit down and open his book.",
-    errors: ["parallel structure"],
-    difficulty: 2
+    incorrect: 'your going to help the students today',
+    correct: "You're going to help the students today.",
+    difficulty: 1,
+    category: 'basic',
+    errorType: 'homophone (your/you\'re), capitalization'
   },
   {
-    id: 4,
-    incorrect: "Each of the teachers have their own classroom.",
-    correct: "Each of the teachers has their own classroom.",
-    errors: ["subject-verb agreement with indefinite pronouns"],
-    difficulty: 2
+    incorrect: 'she dont need extra time for the test',
+    correct: "She doesn't need extra time for the test.",
+    difficulty: 1,
+    category: 'basic',
+    errorType: 'contraction, capitalization'
   },
   {
-    id: 5,
-    incorrect: "Its important that your on time for the meeting.",
-    correct: "It's important that you're on time for the meeting.",
-    errors: ["homophones (its/it's, your/you're)"],
-    difficulty: 1
+    incorrect: 'the students was working on they\'re project',
+    correct: 'The students were working on their project.',
+    difficulty: 1,
+    category: 'basic',
+    errorType: 'subject-verb agreement, homophone, capitalization'
+  },
+  
+  // INTERMEDIATE (6 sentences)
+  {
+    incorrect: 'The teacher aide help students with reading writing and spelling.',
+    correct: 'The teacher aide helps students with reading, writing, and spelling.',
+    difficulty: 2,
+    category: 'intermediate',
+    errorType: 'subject-verb agreement, comma placement'
   },
   {
-    id: 6,
-    incorrect: "The data shows that students' performance are improving.",
-    correct: "The data show that students' performance is improving.",
-    errors: ["subject-verb agreement", "collective noun usage"],
-    difficulty: 3
+    incorrect: 'Its important to read the question carefully and write down exactly what the student says',
+    correct: "It's important to read the question carefully and write down exactly what the student says.",
+    difficulty: 2,
+    category: 'intermediate',
+    errorType: 'contraction (its/it\'s), missing period'
   },
   {
-    id: 7,
-    incorrect: "Neither the teacher nor the students was ready for the test.",
-    correct: "Neither the teacher nor the students were ready for the test.",
-    errors: ["compound subject agreement"],
-    difficulty: 3
+    incorrect: 'the student with dyslexia need a reader writer for all assessments',
+    correct: 'The student with dyslexia needs a reader-writer for all assessments.',
+    difficulty: 2,
+    category: 'intermediate',
+    errorType: 'capitalization, subject-verb agreement, hyphenation'
   },
   {
-    id: 8,
-    incorrect: "The principle of the school announced new policies.",
-    correct: "The principal of the school announced new policies.",
-    errors: ["homophone (principle/principal)"],
-    difficulty: 1
+    incorrect: 'When your helping students make sure you dont give them the answers',
+    correct: "When you're helping students, make sure you don't give them the answers.",
+    difficulty: 2,
+    category: 'intermediate',
+    errorType: 'homophone, comma, contraction'
   },
   {
-    id: 9,
-    incorrect: "Having finished the exam the bell rang.",
-    correct: "Having finished the exam, the students heard the bell ring.",
-    errors: ["dangling modifier"],
-    difficulty: 3
+    incorrect: 'The students needs extra time because there still learning english',
+    correct: 'The students need extra time because they\'re still learning English.',
+    difficulty: 2,
+    category: 'intermediate',
+    errorType: 'subject-verb agreement, homophone, capitalization'
   },
   {
-    id: 10,
-    incorrect: "The teacher, as well as the students, were excited about the trip.",
-    correct: "The teacher, as well as the students, was excited about the trip.",
-    errors: ["subject-verb agreement with intervening phrase"],
-    difficulty: 3
+    incorrect: 'She asked if I could help her with the assesment tasks',
+    correct: 'She asked if I could help her with the assessment tasks.',
+    difficulty: 2,
+    category: 'intermediate',
+    errorType: 'spelling (assesment)'
+  },
+  
+  // ADVANCED (4 sentences)
+  {
+    incorrect: 'The teacher aide should remain neutral patient and supportive when working with students who has learning difficulties',
+    correct: 'The teacher aide should remain neutral, patient, and supportive when working with students who have learning difficulties.',
+    difficulty: 3,
+    category: 'advanced',
+    errorType: 'comma placement, subject-verb agreement'
   },
   {
-    id: 11,
-    incorrect: "Who's book is this lying on the desk?",
-    correct: "Whose book is this lying on the desk?",
-    errors: ["homophone (who's/whose)"],
-    difficulty: 1
+    incorrect: 'During the assessment you must read each question clearly write exactly what the student says and avoid correcting there grammar',
+    correct: 'During the assessment, you must read each question clearly, write exactly what the student says, and avoid correcting their grammar.',
+    difficulty: 3,
+    category: 'advanced',
+    errorType: 'comma placement (serial commas), homophone'
   },
   {
-    id: 12,
-    incorrect: "The student should of handed in his assignment yesterday.",
-    correct: "The student should have handed in his assignment yesterday.",
-    errors: ["should of/should have"],
-    difficulty: 1
+    incorrect: 'If a student asks you to repeat something you should do so without adding extra information or changing any words',
+    correct: 'If a student asks you to repeat something, you should do so without adding extra information or changing any words.',
+    difficulty: 3,
+    category: 'advanced',
+    errorType: 'comma after introductory clause'
   },
   {
-    id: 13,
-    incorrect: "Alot of students need extra support with literacy.",
-    correct: "A lot of students need extra support with literacy.",
-    errors: ["alot vs a lot"],
-    difficulty: 1
-  },
-  {
-    id: 14,
-    incorrect: "The affect of good teaching is clear in student outcomes.",
-    correct: "The effect of good teaching is clear in student outcomes.",
-    errors: ["homophone (affect/effect)"],
-    difficulty: 2
-  },
-  {
-    id: 15,
-    incorrect: "Less students are failing since the intervention began.",
-    correct: "Fewer students are failing since the intervention began.",
-    errors: ["less vs fewer with countable nouns"],
-    difficulty: 2
+    incorrect: 'The reader writer must not provide any hints explanations or teaching support during the test',
+    correct: 'The reader-writer must not provide any hints, explanations, or teaching support during the test.',
+    difficulty: 3,
+    category: 'advanced',
+    errorType: 'hyphenation, comma placement'
   }
 ];
 
-// Reading comprehension passages - adult level, education context
+// READING PASSAGES - 2 passages (shorter, easier)
 export const readingPassages = [
   {
-    id: 1,
-    title: "Supporting Students with Dyslexia",
-    text: `Dyslexia is a specific learning difference that affects the way the brain processes written and spoken language. Students with dyslexia often have difficulty with accurate and fluent word recognition, spelling, and decoding abilities. Despite these challenges, dyslexia is not related to intelligence, and many individuals with dyslexia possess strong reasoning, problem-solving, and creative thinking skills.
+    id: 'passage1',
+    title: 'Understanding Dyslexia',
+    wordCount: 185,
+    text: `Dyslexia is a learning difference that affects how the brain processes written language. Students with dyslexia often have difficulty with reading, spelling, and writing, but their intelligence is not affected. In fact, many successful people have dyslexia.
 
-In the classroom, teacher aides play a crucial role in supporting students with dyslexia. Effective strategies include providing extra time for reading and writing tasks, using multisensory teaching approaches, breaking down instructions into smaller steps, and offering regular positive reinforcement. It's important to understand that dyslexia is a lifelong condition, but with appropriate support and intervention, students can develop effective coping strategies and achieve academic success.
+As a Teacher Aide or Reader-Writer, you will support students with dyslexia during assessments. This might include reading questions aloud, scribing answers, or providing extra time. It is important to understand that dyslexia looks different in every student. Some struggle with reading speed, others with spelling, and some with both.
 
-Reader-writers working with dyslexic students during assessments must maintain strict confidentiality and follow NZQA guidelines. They should read questions exactly as written, without interpretation or explanation, and accurately transcribe the student's spoken responses without correcting grammar or spelling. The goal is to remove the barrier of written expression while ensuring the assessment remains fair and valid.`,
+The key to supporting these students is patience and clear communication. Always read exactly what is written without adding your own words. When scribing, write exactly what the student says without correcting their grammar or spelling. Your role is to provide access to the assessment, not to teach or help with content. Remember that students with dyslexia are capable learners who simply need a different way to show their knowledge.`,
     questions: [
       {
-        id: 1,
-        question: "According to the passage, dyslexia affects:",
+        id: 'p1q1',
+        question: 'What is the main purpose of a Reader-Writer?',
         options: [
-          "Intelligence and reasoning ability",
-          "The brain's processing of written and spoken language",
-          "Only reading, not writing or spelling",
-          "Creative thinking and problem-solving skills"
+          'To teach students during assessments',
+          'To provide access to assessments without helping with content',
+          'To correct student grammar and spelling',
+          'To give students the answers'
         ],
-        correct: 1
+        correct: 'To provide access to assessments without helping with content'
       },
       {
-        id: 2,
-        question: "Which strategy is NOT mentioned as effective for supporting dyslexic students?",
+        id: 'p1q2',
+        question: 'According to the passage, dyslexia affects:',
         options: [
-          "Breaking down instructions into smaller steps",
-          "Using multisensory teaching approaches",
-          "Reducing the difficulty of assessment tasks",
-          "Providing extra time for tasks"
+          'Intelligence levels',
+          'How the brain processes written language',
+          'Only reading speed',
+          'Mathematical ability'
         ],
-        correct: 2
+        correct: 'How the brain processes written language'
       },
       {
-        id: 3,
-        question: "When working as a reader-writer during assessments, you should:",
+        id: 'p1q3',
+        question: 'When scribing for a student, you should:',
         options: [
-          "Explain difficult questions to help the student understand",
-          "Correct obvious spelling mistakes when transcribing",
-          "Read questions exactly as written without interpretation",
-          "Simplify complex vocabulary for the student"
+          'Correct their grammar mistakes',
+          'Add words to make sentences clearer',
+          'Write exactly what they say',
+          'Simplify complex vocabulary'
         ],
-        correct: 2
+        correct: 'Write exactly what they say'
       },
       {
-        id: 4,
-        question: "The passage suggests that dyslexia is:",
+        id: 'p1q4',
+        question: 'The passage states that dyslexia:',
         options: [
-          "A temporary condition that improves with age",
-          "A sign of lower intelligence",
-          "A lifelong condition that can be managed with support",
-          "Only a problem in academic settings"
+          'Looks the same in every student',
+          'Only affects spelling',
+          'Looks different in every student',
+          'Cannot be supported during assessments'
         ],
-        correct: 2
-      },
-      {
-        id: 5,
-        question: "The main purpose of reader-writer support is to:",
-        options: [
-          "Help students get better grades",
-          "Remove the barrier of written expression",
-          "Make assessments easier for students",
-          "Provide additional teaching during exams"
-        ],
-        correct: 1
+        correct: 'Looks different in every student'
       }
-    ],
-    wordCount: 253
+    ]
   },
   {
-    id: 2,
-    title: "Understanding Special Assessment Conditions (SAC)",
-    text: `Special Assessment Conditions (SAC) are adaptations and provisions made for students with learning needs to ensure fair access to assessments. These conditions are designed to reduce barriers to assessment while maintaining the integrity and validity of the qualification. SAC do not give students an unfair advantage; rather, they level the playing field by addressing specific difficulties that would otherwise prevent students from demonstrating their true knowledge and abilities.
+    id: 'passage2',
+    title: 'Special Assessment Conditions (SAC)',
+    wordCount: 190,
+    text: `Special Assessment Conditions (SAC) provide students with fair access to assessments when they have learning needs. SAC are not about giving students an advantage. They are about removing barriers so students can show what they know.
 
-Common SAC provisions include extra time (typically 25% additional time, or "time and a half"), use of a reader, use of a writer, rest breaks, and separate accommodation. To qualify for SAC, students must provide evidence of a verified condition such as a learning disability, physical disability, sensory impairment, or mental health condition. This evidence usually comes from assessments conducted by registered professionals such as psychologists, learning support coordinators, or medical practitioners.
+Common SAC include extra time, reader-writer support, rest breaks, and separate rooms. To receive SAC, students must have evidence of their learning needs. This evidence usually comes from educational assessments or medical reports. Schools must apply for SAC through NZQA before students sit external examinations.
 
-Teacher aides working in SAC roles must understand that their responsibility is to provide access, not assistance. For example, a reader must read the question exactly as written, including all words, numbers, and symbols, without providing hints or explanations. Similarly, a writer must transcribe the student's exact words without correcting grammar, spelling, or suggesting improvements. Maintaining these boundaries is essential for upholding assessment integrity and ensuring students receive fair, valid qualifications recognized by employers and tertiary institutions.`,
+As a Teacher Aide providing SAC support, you have important responsibilities. You must maintain confidentiality about student information. You must follow the approved conditions exactly without adding or removing any support. During assessments, read clearly and at a steady pace. Write exactly what students say without correcting errors. If students ask questions about content, remind them that you cannot help with answers. Your role is to be the student's eyes, ears, or hands, not their brain. By following these guidelines, you help maintain the integrity of the assessment while ensuring students have fair access.`,
     questions: [
       {
-        id: 1,
-        question: "The main purpose of Special Assessment Conditions is to:",
+        id: 'p2q1',
+        question: 'What is the main purpose of Special Assessment Conditions?',
         options: [
-          "Give struggling students better grades",
-          "Make assessments easier for all students",
-          "Reduce barriers while maintaining assessment integrity",
-          "Replace normal teaching with extra support"
+          'To give students an advantage over others',
+          'To remove barriers so students can show what they know',
+          'To make assessments easier',
+          'To reduce the amount of work students must do'
         ],
-        correct: 2
+        correct: 'To remove barriers so students can show what they know'
       },
       {
-        id: 2,
-        question: "According to the passage, 'time and a half' means:",
+        id: 'p2q2',
+        question: 'To receive SAC, students must have:',
         options: [
-          "50% additional time",
-          "25% additional time",
-          "Double the normal time",
-          "15 minutes extra per hour"
+          'A note from their parents',
+          'Evidence of their learning needs',
+          'High grades in all subjects',
+          'A doctor they visit regularly'
         ],
-        correct: 1
+        correct: 'Evidence of their learning needs'
       },
       {
-        id: 3,
-        question: "Evidence for SAC typically comes from:",
+        id: 'p2q3',
+        question: 'If a student asks you about content during an assessment, you should:',
         options: [
-          "Parent requests and teacher observations only",
-          "The student's previous academic results",
-          "Registered professionals such as psychologists",
-          "The Dean or Learning Support Coordinator's opinion"
+          'Help them understand the question',
+          'Give them a hint',
+          'Remind them you cannot help with answers',
+          'Tell them to guess'
         ],
-        correct: 2
+        correct: 'Remind them you cannot help with answers'
       },
       {
-        id: 4,
-        question: "When working as a reader during SAC assessments, you must:",
+        id: 'p2q4',
+        question: 'The passage describes a Teacher Aide\'s role as being:',
         options: [
-          "Explain difficult words to help the student",
-          "Read questions exactly as written, including all symbols",
-          "Summarize long questions to save time",
-          "Provide hints if the student seems confused"
+          'The student\'s teacher',
+          'The student\'s eyes, ears, or hands',
+          'The student\'s brain',
+          'The student\'s friend'
         ],
-        correct: 1
-      },
-      {
-        id: 5,
-        question: "The passage emphasizes that SAC support is about providing:",
-        options: [
-          "Assistance with understanding the content",
-          "Access, not assistance",
-          "Easier versions of assessments",
-          "Extra teaching during exams"
-        ],
-        correct: 1
+        correct: 'The student\'s eyes, ears, or hands'
       }
-    ],
-    wordCount: 268
+    ]
   }
 ];
 
-// Typing test transcription scenario
-export const typingText = `The student with dyslexia requires extra time and a reader-writer for all internal and external assessments. During the assessment, ensure that you read each question clearly and exactly as written, including all punctuation marks and mathematical symbols. When the student provides their answer, transcribe their words precisely without making corrections to grammar, spelling, or sentence structure. If the student asks you to read back what they have dictated, do so accurately. Remember that your role is to provide access to the assessment, not to assist with content or provide teaching support.`;
+// TYPING TEST PASSAGE - Shorter and simpler (110 words)
+export const typingText = `The student needs extra time and a reader-writer for the test. Read each question clearly and exactly as written. When the student gives their answer, write their words without correcting grammar or spelling. If they ask you to read back what they said, do so accurately. Your role is to provide access to the test, not to help with content. Speak clearly and at a steady pace. If the student cannot hear you, repeat the question. Always remain neutral and patient. Remember that you are there to support the student in showing their knowledge.`;
