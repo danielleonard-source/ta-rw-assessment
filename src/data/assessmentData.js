@@ -1,13 +1,13 @@
 // SPELLING WORDS - 20 total (5 basic, 6 intermediate, 5 advanced, 4 expert)
 export const spellingWords = [
-  // BASIC (5 words) - Common 3-5 letter words
+  // BASIC (5 words)
   { word: 'their', difficulty: 1, category: 'basic' },
   { word: 'could', difficulty: 1, category: 'basic' },
   { word: 'where', difficulty: 1, category: 'basic' },
   { word: 'would', difficulty: 1, category: 'basic' },
   { word: 'which', difficulty: 1, category: 'basic' },
   
-  // INTERMEDIATE (6 words) - 6-8 letter everyday words
+  // INTERMEDIATE (6 words)
   { word: 'because', difficulty: 2, category: 'intermediate' },
   { word: 'through', difficulty: 2, category: 'intermediate' },
   { word: 'writing', difficulty: 2, category: 'intermediate' },
@@ -15,23 +15,21 @@ export const spellingWords = [
   { word: 'between', difficulty: 2, category: 'intermediate' },
   { word: 'teacher', difficulty: 2, category: 'intermediate' },
   
-  // ADVANCED (5 words) - 9-11 letter professional vocabulary
+  // ADVANCED (5 words)
   { word: 'assessment', difficulty: 3, category: 'advanced' },
   { word: 'necessary', difficulty: 3, category: 'advanced' },
   { word: 'different', difficulty: 3, category: 'advanced' },
   { word: 'important', difficulty: 3, category: 'advanced' },
   { word: 'knowledge', difficulty: 3, category: 'advanced' },
   
-  // EXPERT (4 words) - 12+ letter complex words
+  // EXPERT (4 words)
   { word: 'accommodation', difficulty: 4, category: 'expert' },
   { word: 'particularly', difficulty: 4, category: 'expert' },
   { word: 'professional', difficulty: 4, category: 'expert' },
   { word: 'occasionally', difficulty: 4, category: 'expert' }
 ];
 
-// GRAMMAR SENTENCES - 15 total (5 basic, 6 intermediate, 4 advanced)
 export const grammarSentences = [
-  // BASIC (5 sentences)
   {
     incorrect: 'the student need help with there work',
     correct: 'The student needs help with their work.',
@@ -51,7 +49,7 @@ export const grammarSentences = [
     correct: "You're going to help the students today.",
     difficulty: 1,
     category: 'basic',
-    errorType: 'homophone (your/you\'re), capitalization'
+    errorType: 'homophone'
   },
   {
     incorrect: 'she dont need extra time for the test',
@@ -67,8 +65,6 @@ export const grammarSentences = [
     category: 'basic',
     errorType: 'subject-verb agreement, homophone, capitalization'
   },
-  
-  // INTERMEDIATE (6 sentences)
   {
     incorrect: 'The teacher aide help students with reading writing and spelling.',
     correct: 'The teacher aide helps students with reading, writing, and spelling.',
@@ -81,7 +77,7 @@ export const grammarSentences = [
     correct: "It's important to read the question carefully and write down exactly what the student says.",
     difficulty: 2,
     category: 'intermediate',
-    errorType: 'contraction (its/it\'s), missing period'
+    errorType: 'contraction'
   },
   {
     incorrect: 'the student with dyslexia need a reader writer for all assessments',
@@ -99,7 +95,7 @@ export const grammarSentences = [
   },
   {
     incorrect: 'The students needs extra time because there still learning english',
-    correct: 'The students need extra time because they\'re still learning English.',
+    correct: "The students need extra time because they're still learning English.",
     difficulty: 2,
     category: 'intermediate',
     errorType: 'subject-verb agreement, homophone, capitalization'
@@ -109,10 +105,8 @@ export const grammarSentences = [
     correct: 'She asked if I could help her with the assessment tasks.',
     difficulty: 2,
     category: 'intermediate',
-    errorType: 'spelling (assesment)'
+    errorType: 'spelling'
   },
-  
-  // ADVANCED (4 sentences)
   {
     incorrect: 'The teacher aide should remain neutral patient and supportive when working with students who has learning difficulties',
     correct: 'The teacher aide should remain neutral, patient, and supportive when working with students who have learning difficulties.',
@@ -125,7 +119,7 @@ export const grammarSentences = [
     correct: 'During the assessment, you must read each question clearly, write exactly what the student says, and avoid correcting their grammar.',
     difficulty: 3,
     category: 'advanced',
-    errorType: 'comma placement (serial commas), homophone'
+    errorType: 'comma placement, homophone'
   },
   {
     incorrect: 'If a student asks you to repeat something you should do so without adding extra information or changing any words',
@@ -143,7 +137,6 @@ export const grammarSentences = [
   }
 ];
 
-// READING PASSAGES - 2 passages
 export const readingPassages = [
   {
     id: 'passage1',
@@ -246,18 +239,17 @@ As a Teacher Aide providing SAC support, you have important responsibilities. Yo
       },
       {
         id: 'p2q4',
-        question: 'The passage describes a Teacher Aide\'s role as being:',
+        question: 'The passage describes a Teacher Aide role as being:',
         options: [
-          'The student\'s teacher',
-          'The student\'s eyes, ears, or hands',
-          'The student\'s brain',
-          'The student\'s friend'
+          'The student teacher',
+          'The student eyes, ears, or hands',
+          'The student brain',
+          'The student friend'
         ],
-        correct: 'The student\'s eyes, ears, or hands'
+        correct: 'The student eyes, ears, or hands'
       }
     ]
   }
 ];
 
-// TYPING TEST PASSAGE - Shorter (110 words)
 export const typingText = `The student needs extra time and a reader-writer for the test. Read each question clearly and exactly as written. When the student gives their answer, write their words without correcting grammar or spelling. If they ask you to read back what they said, do so accurately. Your role is to provide access to the test, not to help with content. Speak clearly and at a steady pace. If the student cannot hear you, repeat the question. Always remain neutral and patient. Remember that you are there to support the student in showing their knowledge.`;
