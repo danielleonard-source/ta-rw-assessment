@@ -85,7 +85,8 @@ export function calculateGrammarBreakdown(answers, sentences) {
   const breakdown = {
     basic: { correct: 0, total: 0, score: 0 },
     intermediate: { correct: 0, total: 0, score: 0 },
-    advanced: { correct: 0, total: 0, score: 0 }
+    advanced: { correct: 0, total: 0, score: 0 },
+    expert: { correct: 0, total: 0, score: 0 }
   };
 
   answers.forEach((answer, idx) => {
@@ -93,9 +94,11 @@ export function calculateGrammarBreakdown(answers, sentences) {
     const score = scoreGrammar(answer, sentence.correct);
     const category = sentence.category;
 
-    breakdown[category].total++;
-    if (score >= 0.9) {
-      breakdown[category].correct++;
+    if (breakdown[category]) {
+      breakdown[category].total++;
+      if (score >= 0.9) {
+        breakdown[category].correct++;
+      }
     }
   });
 
@@ -129,7 +132,6 @@ export function calculateTypingScore(typedText, referenceText, timeInSeconds) {
   const referenceWords = cleanReference.split(/\s+/).filter(w => w.length > 0);
   
   console.log('Typed words count:', typedWords.length);
-  console.log('Reference words count:', referenceWords.length);
   
   const wordCount = typedWords.length;
   const rawWPM = timeInSeconds > 0 ? Math.round((wordCount / timeInSeconds) * 60) : 0;
@@ -167,7 +169,7 @@ export function calculateTypingScore(typedText, referenceText, timeInSeconds) {
   };
 }
 
-// Calculate overall grade
+// Calculate overall grade - UPDATED WEIGHTS AND THRESHOLDS
 export function calculateOverallGrade(scores) {
   const {
     spellingScore,
@@ -185,25 +187,47 @@ export function calculateOverallGrade(scores) {
   const avgSpellingScore = (spellingScore + typingSpellingScore) / 2;
   const avgGrammarScore = grammarScore;
 
+  // NEW WEIGHTS: Spelling/Grammar/Typing Accuracy carry most weight
+  // Spelling & Grammar: 50%, Typing Accuracy: 25%, Reading: 15%, Typing Speed: 10%
+  const spellingGrammarWeight = 0.50;  // 50% - most important
+  const typingAccuracyWeight = 0.25;   // 25% - second most important
+  const readingWeight = 0.15;           // 15%
+  const typingSpeedWeight = 0.10;       // 10%
+
+  // Normalize scores to 0-100
   const spellingNormalized = avgSpellingScore;
   const grammarNormalized = avgGrammarScore;
-  const readingWPMNormalized = Math.min(100, (readingWPM / 250) * 100);
-  const typingWPMNormalized = Math.min(100, (typingWPM / 60) * 100);
+  const readingWPMNormalized = Math.min(100, (readingWPM / 200) * 100); // 200 WPM = 100%
+  const typingWPMNormalized = Math.min(100, (typingWPM / 40) * 100);    // 40 WPM = 100%
 
+  // Combined spelling/grammar (average of both)
   const spellingGrammarCombined = (spellingNormalized + grammarNormalized) / 2;
-  const readingCombined = (readingWPMNormalized * 0.6) + (readingAccuracy * 0.4);
-  const typingCombined = (typingWPMNormalized * 0.6) + (typingAccuracy * 0.4);
+  
+  // Reading combined: 50% WPM + 50% accuracy
+  const readingCombined = (readingWPMNormalized * 0.5) + (readingAccuracy * 0.5);
 
+  // Apply weights
   const weightedScore = 
-    (spellingGrammarCombined * 0.40) +
-    (readingCombined * 0.35) +
-    (typingCombined * 0.25);
+    (spellingGrammarCombined * spellingGrammarWeight) +
+    (typingAccuracy * typingAccuracyWeight) +
+    (readingCombined * readingWeight) +
+    (typingWPMNormalized * typingSpeedWeight);
 
+  console.log('Spelling/Grammar combined:', spellingGrammarCombined);
+  console.log('Typing accuracy:', typingAccuracy);
+  console.log('Reading combined:', readingCombined);
+  console.log('Typing WPM normalized:', typingWPMNormalized);
+  console.log('Weighted score:', weightedScore);
+
+  // NEW THRESHOLDS: More inclusive
+  // 75%+ = SUITABLE (great)
+  // 60-74% = REVIEW (possibly considerable)
+  // <60% = NOT RECOMMENDED
   let recommendation = '';
-  if (weightedScore >= 75 && avgSpellingScore >= 70 && avgGrammarScore >= 70 && typingWPM >= 35) {
+  if (weightedScore >= 75 && avgSpellingScore >= 65 && avgGrammarScore >= 65) {
     recommendation = 'SUITABLE - Strong candidate for TA/RW role';
-  } else if (weightedScore >= 60 && avgSpellingScore >= 60 && avgGrammarScore >= 60) {
-    recommendation = 'REVIEW - May be suitable with support or specific placement';
+  } else if (weightedScore >= 60 && avgSpellingScore >= 50 && avgGrammarScore >= 50) {
+    recommendation = 'POSSIBLE - May be suitable with support or specific placement';
   } else {
     recommendation = 'NOT RECOMMENDED - Does not meet minimum competency standards';
   }
@@ -216,8 +240,9 @@ export function calculateOverallGrade(scores) {
     recommendation,
     breakdown: {
       spellingGrammar: Math.round(spellingGrammarCombined),
+      typingAccuracy: Math.round(typingAccuracy),
       reading: Math.round(readingCombined),
-      typing: Math.round(typingCombined)
+      typingSpeed: Math.round(typingWPMNormalized)
     }
   };
 }
